@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Plus, Edit, Trash, Table as TableIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Edit, Trash, Table as TableIcon, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableCaption } from "@/components/ui/table";
 import { localStorageService, Appointment, Patient, Doctor } from "@/services/localStorageService";
@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { printData } from "@/utils/printUtils";
 
 type NewAppointmentForm = {
   patientId: string;
@@ -145,12 +146,32 @@ const Appointments = () => {
     setDialogOpen(true);
   };
 
+  const handlePrint = () => {
+    const printableData = appointments.map(app => ({
+      patient: app.patientName || 'N/A',
+      doctor: app.doctorName || 'N/A',
+      date: app.date,
+      time: app.time,
+      reason: app.reason,
+      status: app.status,
+    }));
+    printData(
+      printableData,
+      t("appointments"),
+      ['patient', 'doctor', 'date', 'time', 'reason', 'status']
+    );
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">{t("appointments")}</h1>
           <div className="flex items-center gap-3">
+            <Button onClick={handlePrint} variant="outline">
+              <Printer className="h-4 w-4 mr-2" />
+              {t('print') || 'Print'}
+            </Button>
             <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
               <SelectTrigger className="w-32">
                 <SelectValue>
@@ -245,6 +266,10 @@ const Appointments = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">{t("appointments")}</h1>
         <div className="flex items-center gap-3">
+          <Button onClick={handlePrint} variant="outline">
+            <Printer className="h-4 w-4 mr-2" />
+            {t('print') || 'Print'}
+          </Button>
           <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
             <SelectTrigger className="w-32">
               <SelectValue>

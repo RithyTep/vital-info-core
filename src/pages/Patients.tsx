@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Plus, Edit, Trash, Table as TableIcon, Users } from "lucide-react";
+import { CalendarIcon, Plus, Edit, Trash, Table as TableIcon, Users, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { printData } from "@/utils/printUtils";
 
 type NewPatientForm = {
   name: string;
@@ -191,6 +192,22 @@ const Patients = () => {
     setPatientToDelete(null);
   };
 
+  const handlePrint = () => {
+    const printableData = patients.map(patient => ({
+      name: patient.name,
+      email: patient.email,
+      contact: patient.contact,
+      gender: patient.gender,
+      dob: patient.dob,
+      address: patient.address,
+    }));
+    printData(
+      printableData,
+      t('patients'),
+      ['name', 'email', 'contact', 'gender', 'dob', 'address']
+    );
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -210,6 +227,10 @@ const Patients = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-primary">{t('patients')}</h1>
         <div className="flex items-center gap-3">
+          <Button onClick={handlePrint} variant="outline">
+            <Printer className="h-4 w-4 mr-2" />
+            {t('print') || 'Print'}
+          </Button>
           <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
             <SelectTrigger className="w-32">
               <SelectValue>
