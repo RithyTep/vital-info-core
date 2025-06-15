@@ -2,19 +2,17 @@
 import React, { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 
-function getTimeInGmtPlus7() {
-  const now = new Date();
-  // get UTC+7 offset in minutes
-  const gmt7 = new Date(now.getTime() + (420 - now.getTimezoneOffset()) * 60000);
-  return gmt7;
+// Get current time in Cambodia Timezone (Asia/Phnom_Penh)
+function getTimeInCambodia() {
+  return new Date();
 }
 
 const CurrentTime = () => {
-  const [time, setTime] = useState(getTimeInGmtPlus7());
+  const [time, setTime] = useState(getTimeInCambodia());
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(getTimeInGmtPlus7());
+      setTime(getTimeInCambodia());
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -27,12 +25,14 @@ const CurrentTime = () => {
           hour12: false,
           hour: "2-digit",
           minute: "2-digit",
-          second: "2-digit"
+          second: "2-digit",
+          timeZone: "Asia/Phnom_Penh",
         })}
       </span>
-      <span className="text-xs text-gray-500 ml-2">(GMT+7)</span>
+      <span className="text-xs text-gray-500 ml-2">(Cambodia GMT+7)</span>
     </div>
   );
 };
 
 export default CurrentTime;
+
