@@ -14,12 +14,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash } from 'lucide-react';
+import { Plus, Edit, Trash, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { localStorageService, Doctor } from '@/services/localStorageService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { printData } from '@/utils/printUtils';
 
 const Doctors = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -42,6 +43,17 @@ const Doctors = () => {
     fetchDoctors();
     // eslint-disable-next-line
   }, []);
+
+  const handlePrint = () => {
+    const printableData = doctors.map(doc => ({
+      name: doc.name,
+      specialty: doc.specialty,
+      contact: doc.contact,
+      email: doc.email || '',
+      address: doc.address || ''
+    }));
+    printData(printableData, t('doctors'), ['name', 'specialty', 'contact', 'email', 'address']);
+  };
 
   const fetchDoctors = () => {
     setLoading(true);
@@ -140,6 +152,10 @@ const Doctors = () => {
               <SelectItem value="km">ខ្មែរ</SelectItem>
             </SelectContent>
           </Select>
+          <Button onClick={handlePrint} variant="outline">
+            <Printer className="h-4 w-4 mr-2" />
+            {t('print') || 'Print'}
+          </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={openAddDialog}>
