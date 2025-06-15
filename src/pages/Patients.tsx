@@ -1,18 +1,30 @@
-
 import React, { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
+  Card,
+  Button,
+  Input,
+  Textarea,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash, Table as TableIcon } from "lucide-react";
+  Label,
+  Plus,
+  Edit,
+  Trash,
+  Table as TableIcon,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Calendar,
+  CalendarIcon,
+} from "@/components/ui";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -24,18 +36,32 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { localStorageService, Patient } from "@/services/localStorageService";
+import { format } from "date-fns";
+
+type NewPatientForm = {
+  name: string;
+  email: string;
+  phone: string;
+  gender: string;
+  dob: Date | undefined;
+  address: string;
+};
+
+const defaultFormData: NewPatientForm = {
+  name: "",
+  email: "",
+  phone: "",
+  gender: "",
+  dob: undefined,
+  address: "",
+};
 
 const Patients = () => {
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatients] = useState<(Patient & { email?: string; phone?: string; gender?: string; dob?: string; address?: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
-  const [formData, setFormData] = useState<Omit<Patient, "id" | "createdAt">>({
-    name: "",
-    age: 0,
-    contact: "",
-    medicalHistory: "",
-  });
+  const [formData, setFormData] = useState<NewPatientForm>(defaultFormData);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -62,14 +88,26 @@ const Patients = () => {
     e.preventDefault();
 
     try {
+      const patientInfo = {
+        name: formData.name,
+        email: formData.email,
+        contact: formData.phone,
+        gender: formData.gender,
+        dob: formData.dob ? formData.dob.toISOString().split("T")[0] : "",
+        address: formData.address,
+        age: formData.dob ? new Date().getFullYear() - formData.dob.getFullYear() : 0,
+        medicalHistory: editingPatient?.medicalHistory || "",
+      };
       if (editingPatient) {
-        localStorageService.updatePatient(editingPatient.id, formData);
+        localStorageService.updatePatient(editingPatient.id, patientInfo);
         toast({
           title: "Success",
           description: "Patient updated successfully",
         });
       } else {
-        localStorageService.createPatient(formData);
+        localStorageService.createPatient({
+          ...patientInfo,
+        });
         toast({
           title: "Success",
           description: "Patient added successfully",
@@ -78,7 +116,7 @@ const Patients = () => {
 
       setDialogOpen(false);
       setEditingPatient(null);
-      setFormData({ name: "", age: 0, contact: "", medicalHistory: "" });
+      setFormData(defaultFormData);
       fetchPatients();
     } catch (error) {
       toast({
@@ -92,10 +130,12 @@ const Patients = () => {
   const handleEdit = (patient: Patient) => {
     setEditingPatient(patient);
     setFormData({
-      name: patient.name,
-      age: patient.age,
-      contact: patient.contact,
-      medicalHistory: patient.medicalHistory,
+      name: patient.name || "",
+      email: (patient as any).email || "",
+      phone: patient.contact || "",
+      gender: (patient as any).gender || "",
+      dob: patient.dob ? new Date(patient.dob) : undefined,
+      address: (patient as any).address || "",
     });
     setDialogOpen(true);
   };
@@ -123,7 +163,7 @@ const Patients = () => {
 
   const openAddDialog = () => {
     setEditingPatient(null);
-    setFormData({ name: "", age: 0, contact: "", medicalHistory: "" });
+    setFormData(defaultFormData);
     setDialogOpen(true);
   };
 
@@ -155,15 +195,16 @@ const Patients = () => {
               Add Patient
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[480px]">
             <DialogHeader>
               <DialogTitle>
                 {editingPatient ? "Edit Patient" : "Add New Patient"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <p className="text-gray-500 text-sm">Enter the patient's information to create a new record.</p>
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -173,50 +214,99 @@ const Patients = () => {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      age: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  required
-                  min={0}
-                />
+              <div className="flex gap-2">
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select
+                    value={formData.gender}
+                    onValueChange={value => setFormData({ ...formData, gender: value })}
+                  >
+                    <SelectTrigger id="gender">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="dob">Date of Birth</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className={`w-full justify-start text-left font-normal ${!formData.dob ? "text-muted-foreground" : ""}`}
+                      >
+                        {formData.dob ? format(formData.dob, "yyyy-MM-dd") : <span>Pick a date</span>}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={formData.dob}
+                        onSelect={date => setFormData({ ...formData, dob: date || undefined })}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact">Contact</Label>
-                <Input
-                  id="contact"
-                  value={formData.contact}
-                  onChange={(e) =>
-                    setFormData({ ...formData, contact: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="medicalHistory">Medical History</Label>
+                <Label htmlFor="address">Address</Label>
                 <Textarea
-                  id="medicalHistory"
-                  value={formData.medicalHistory}
+                  id="address"
+                  value={formData.address}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      medicalHistory: e.target.value,
-                    })
+                    setFormData({ ...formData, address: e.target.value })
                   }
-                  rows={3}
+                  rows={2}
                 />
               </div>
-              <Button type="submit" className="w-full">
-                {editingPatient ? "Update Patient" : "Add Patient"}
-              </Button>
+              {/* Appointments Section - Stub for now */}
+              <Card className="bg-slate-50 border-dashed border-2 text-center text-gray-400 p-4 text-sm">
+                Appointments (coming soon)
+              </Card>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => {
+                  setDialogOpen(false);
+                  setEditingPatient(null);
+                  setFormData(defaultFormData);
+                }}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  {editingPatient ? "Update Patient" : "Create Patient"}
+                </Button>
+              </div>
             </form>
           </DialogContent>
         </Dialog>
@@ -247,9 +337,11 @@ const Patients = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Age</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Medical History</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Gender</TableHead>
+                <TableHead>DOB</TableHead>
+                <TableHead>Address</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -257,9 +349,11 @@ const Patients = () => {
               {patients.map((patient) => (
                 <TableRow key={patient.id}>
                   <TableCell>{patient.name}</TableCell>
-                  <TableCell>{patient.age}</TableCell>
+                  <TableCell>{(patient as any).email}</TableCell>
                   <TableCell>{patient.contact}</TableCell>
-                  <TableCell>{patient.medicalHistory}</TableCell>
+                  <TableCell>{(patient as any).gender}</TableCell>
+                  <TableCell>{(patient as any).dob}</TableCell>
+                  <TableCell>{(patient as any).address}</TableCell>
                   <TableCell className="flex justify-end gap-2">
                     <Button
                       variant="outline"
