@@ -178,6 +178,12 @@ const Dashboard = () => {
     { name: t('appointments'), total: stats.appointments, fill: 'var(--color-appointments)' },
   ];
 
+  const hasSystemOverviewData =
+    stats.patients > 0 ||
+    stats.doctors > 0 ||
+    stats.medications > 0 ||
+    stats.appointments > 0;
+
   return (
     <div className="p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -258,44 +264,46 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2">
-          <BarChartIcon className="h-6 w-6" />
-          <CardTitle>{t('System Overview') || 'System Overview'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <BarChart data={chartData} accessibilityLayer>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="name"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                stroke="#888888"
-                fontSize={12}
-              />
-              <YAxis
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `${value}`}
-                allowDecimals={false}
-              />
-              <Tooltip
-                cursor={{ fill: 'hsl(var(--muted))', radius: 4 }}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="total" radius={4}>
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      {hasSystemOverviewData && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <BarChartIcon className="h-6 w-6" />
+            <CardTitle>{t('System Overview') || 'System Overview'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+              <BarChart data={chartData} accessibilityLayer>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  stroke="#888888"
+                  fontSize={12}
+                />
+                <YAxis
+                  stroke="#888888"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `${value}`}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: 'hsl(var(--muted))', radius: 4 }}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="total" radius={4}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
