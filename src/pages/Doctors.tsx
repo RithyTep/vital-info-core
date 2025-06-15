@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,10 +16,12 @@ const Doctors = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
-  const [formData, setFormData] = useState<Omit<Doctor, 'id' | 'createdAt'>>({
+  const [formData, setFormData] = useState({
     name: '',
     specialty: '',
-    contact: ''
+    contact: '',
+    email: '',
+    address: ''
   });
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
@@ -53,7 +56,7 @@ const Doctors = () => {
       }
       setDialogOpen(false);
       setEditingDoctor(null);
-      setFormData({ name: '', specialty: '', contact: '' });
+      setFormData({ name: '', specialty: '', contact: '', email: '', address: '' });
       fetchDoctors();
     } catch {
       toast({
@@ -69,7 +72,9 @@ const Doctors = () => {
     setFormData({
       name: doctor.name,
       specialty: doctor.specialty,
-      contact: doctor.contact
+      contact: doctor.contact,
+      email: doctor.email || '',
+      address: doctor.address || ''
     });
     setDialogOpen(true);
   };
@@ -86,7 +91,7 @@ const Doctors = () => {
 
   const openAddDialog = () => {
     setEditingDoctor(null);
-    setFormData({ name: '', specialty: '', contact: '' });
+    setFormData({ name: '', specialty: '', contact: '', email: '', address: '' });
     setDialogOpen(true);
   };
 
@@ -147,6 +152,23 @@ const Doctors = () => {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  />
+                </div>
                 <Button type="submit" className="w-full">
                   {editingDoctor ? t("edit") : t("add")}
                 </Button>
@@ -163,13 +185,15 @@ const Doctors = () => {
                 <th className="px-4 py-2 text-left">{t("name")}</th>
                 <th className="px-4 py-2 text-left">{t("specialty")}</th>
                 <th className="px-4 py-2 text-left">{t("contact")}</th>
+                <th className="px-4 py-2 text-left">Email</th>
+                <th className="px-4 py-2 text-left">Address</th>
                 <th className="px-4 py-2">{t("edit")}/{t("delete")}</th>
               </tr>
             </thead>
             <tbody>
               {doctors.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center text-gray-400 py-6">{t('noDoctorsFound')}</td>
+                  <td colSpan={6} className="text-center text-gray-400 py-6">{t('noDoctorsFound')}</td>
                 </tr>
               ) : (
                 doctors.map((doctor) => (
@@ -180,6 +204,8 @@ const Doctors = () => {
                     <td className="px-4 py-2 font-medium">{doctor.name}</td>
                     <td className="px-4 py-2">{doctor.specialty}</td>
                     <td className="px-4 py-2">{doctor.contact}</td>
+                    <td className="px-4 py-2">{doctor.email}</td>
+                    <td className="px-4 py-2">{doctor.address}</td>
                     <td className="px-4 py-2">
                       <div className="flex gap-2">
                         <Button

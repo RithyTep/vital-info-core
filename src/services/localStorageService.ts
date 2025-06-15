@@ -12,6 +12,8 @@ export interface Doctor {
   name: string;
   specialty: string;
   contact: string;
+  email?: string;
+  address?: string;
   createdAt: string;
 }
 
