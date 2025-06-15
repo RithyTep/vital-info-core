@@ -136,7 +136,23 @@ const translations = {
     appShortName: 'HMS',
     hospitalManagementSubtitle: 'Hospital Management',
     language: 'Language',
-    logout: 'Logout'
+    logout: 'Logout',
+    settings: "Settings",
+    profile: "Profile",
+    adminName: "Admin Name",
+    password: "Password",
+    save: "Save",
+    token: "Token",
+    expiresIn: "Expires In",
+    reloginToReset: "Relogin to reset expiry to 24h.",
+    backup: "Backup",
+    exportData: "Export Data (Backup)",
+    restoreData: "Restore Data (Paste backup here)",
+    backupReady: "Backup ready",
+    restoreComplete: "Restore complete",
+    restoreFailed: "Restore failed",
+    adminInfoSaved: "Admin information saved.",
+    authToken: "Auth Token"
   },
   km: {
     // Navigation
@@ -267,7 +283,23 @@ const translations = {
     appShortName: 'HMS',
     hospitalManagementSubtitle: 'ប្រព័ន្ធគ្រប់គ្រងពេទ្យ',
     language: 'ភាសា',
-    logout: 'ចាកចេញ'
+    logout: 'ចាកចេញ',
+    settings: "ការកំណត់",
+    profile: "ប្រវត្តិរូប",
+    adminName: "ឈ្មោះអ្នកគ្រប់គ្រង",
+    password: "ពាក្យសម្ងាត់",
+    save: "រក្សាទុក",
+    token: "Token",
+    expiresIn: "ផុតកំណត់ក្នុងរយៈពេល",
+    reloginToReset: "ចូលបញ្ចូលឡើងវិញដើម្បីកំណត់ ថ្មីនូវអាយុកាល 24ម៉ោង",
+    backup: "បម្រុងទុក",
+    exportData: "នាំចេញទិន្នន័យ (បម្រុងទុក)",
+    restoreData: "ស្ដារទិន្នន័យ (ដាក់បម្រុងនៅទីនេះ)",
+    backupReady: "បានបម្រុងទុក",
+    restoreComplete: "ស្ដារទិន្នន័យបានជោគជ័យ",
+    restoreFailed: "ស្ដារទិន្នន័យបរាជ័យ",
+    adminInfoSaved: "រក្សាទុកព័ត៌មានអ្នកគ្រប់គ្រង។",
+    authToken: "សញ្ញាផ្ទៀងផ្ទាត់កម្មសិទ្ធិ"
   }
 };
 

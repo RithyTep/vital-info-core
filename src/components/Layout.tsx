@@ -24,6 +24,7 @@ const Layout = ({ children }: LayoutProps) => {
     { name: t('doctors'), href: '/doctors', icon: UserCheck },
     { name: t('medications'), href: '/medications', icon: Pill },
     { name: t('appointments'), href: '/appointments', icon: Calendar },
+    { name: t('settings'), href: '/settings', icon: Languages }, // Settings - use Languages/lucide for now
   ];
 
   return (
