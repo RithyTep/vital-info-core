@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash, Search, Printer } from 'lucide-react';
+import { Plus, Edit, Trash, Search, Printer, Table as TableIcon, LayoutGrid } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { localStorageService, Medication } from '@/services/localStorageService';
@@ -19,6 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+} from "@/components/ui/table";
 
 const Medications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -33,6 +42,7 @@ const Medications = () => {
     stockQuantity: 0,
     imageUrl: ''
   });
+  const [view, setView] = useState<'card' | 'table'>('card');
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -68,7 +78,6 @@ const Medications = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       if (editingMedication) {
         localStorageService.updateMedication(editingMedication.id, formData);
@@ -83,7 +92,6 @@ const Medications = () => {
           description: t('medicationAddedSuccess'),
         });
       }
-
       setDialogOpen(false);
       setEditingMedication(null);
       setFormData({ name: '', dosage: '', stockQuantity: 0, imageUrl: '' });
@@ -194,6 +202,25 @@ const Medications = () => {
           {t('medications')}
         </h1>
         <div className="flex space-x-2">
+          {/* Table/card view switcher button */}
+          <Button
+            variant={view === 'card' ? "outline" : "default"}
+            onClick={() => setView(view === 'card' ? 'table' : 'card')}
+            aria-label={view === 'card' ? t('tableView') : t('cardView')}
+            className="hover:bg-gray-100"
+          >
+            {view === 'card' ? (
+              <>
+                <TableIcon className="h-4 w-4 mr-1" />
+                <span>{t('tableView')}</span>
+              </>
+            ) : (
+              <>
+                <LayoutGrid className="h-4 w-4 mr-1" />
+                <span>{t('cardView')}</span>
+              </>
+            )}
+          </Button>
           <Button onClick={handlePrint} variant="outline" className="hover:bg-green-50">
             <Printer className="h-4 w-4 mr-2" />
             {t('print')}
@@ -251,7 +278,7 @@ const Medications = () => {
                     onChange={handleImageUpload}
                     className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
                   />
-                  {formData.imageUrl && <img src={formData.imageUrl} alt="Preview" className="mt-2 h-20 w-20 object-cover rounded" />}
+                  {formData.imageUrl && <img src={formData.imageUrl} alt={t('preview')} className="mt-2 h-20 w-20 object-cover rounded" />}
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                   {editingMedication ? t('save') : t('addMedication')}
@@ -273,6 +300,7 @@ const Medications = () => {
         />
       </div>
 
+      {/* View Toggling between Card and Table */}
       {filteredMedications.length === 0 ? (
         <Card className="bg-white/70 backdrop-blur-sm">
           <CardContent className="flex items-center justify-center py-12">
@@ -287,55 +315,113 @@ const Medications = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMedications.map((medication) => {
-            const stockStatus = getStockStatus(medication.stockQuantity);
-            return (
-              <Card key={medication.id} className="hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm border border-gray-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-gray-800">{medication.name}</span>
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(medication)}
-                        className="hover:bg-blue-50 hover:border-blue-300"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(medication)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {medication.imageUrl && <img src={medication.imageUrl} alt={medication.name} className="mb-3 h-32 w-full object-cover rounded-md" />}
-                  <p className="text-sm text-gray-600">
-                    <strong>{t('dosage')}:</strong> {medication.dosage}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>{t('stockQuantity')}:</strong> {medication.stockQuantity} units
-                  </p>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${stockStatus.color}`}>
-                    {stockStatus.text}
-                  </span>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        view === 'card' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMedications.map((medication) => {
+              const stockStatus = getStockStatus(medication.stockQuantity);
+              return (
+                <Card key={medication.id} className="hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm border border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-gray-800">{medication.name}</span>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(medication)}
+                          aria-label={t('edit')}
+                          className="hover:bg-blue-50 hover:border-blue-300"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(medication)}
+                          aria-label={t('delete')}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {medication.imageUrl && <img src={medication.imageUrl} alt={medication.name} className="mb-3 h-32 w-full object-cover rounded-md" />}
+                    <p className="text-sm text-gray-600">
+                      <strong>{t('dosage')}:</strong> {medication.dosage}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>{t('stockQuantity')}:</strong> {medication.stockQuantity} {t('units')}
+                    </p>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${stockStatus.color}`}>
+                      {stockStatus.text}
+                    </span>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="overflow-x-auto bg-white/80 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200">
+            {/* Table view */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('medicationName')}</TableHead>
+                  <TableHead>{t('dosage')}</TableHead>
+                  <TableHead>{t('stockQuantity')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
+                  <TableHead className="text-right">{t('actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredMedications.map(medication => {
+                  const stockStatus = getStockStatus(medication.stockQuantity);
+                  return (
+                    <TableRow key={medication.id}>
+                      <TableCell>{medication.name}</TableCell>
+                      <TableCell>{medication.dosage}</TableCell>
+                      <TableCell>
+                        {medication.stockQuantity} {t('units')}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${stockStatus.color}`}>
+                          {stockStatus.text}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label={t('edit')}
+                          onClick={() => handleEdit(medication)}
+                          className="hover:bg-blue-50 hover:border-blue-300"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label={t('delete')}
+                          onClick={() => handleDelete(medication)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )
       )}
       <AlertDialog open={!!medicationToDelete} onOpenChange={(open) => !open && setMedicationToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('areYouSure')}</AlertDialogTitle>
             <AlertDialogDescription>
               {t('confirmDeleteMedication')}
             </AlertDialogDescription>
