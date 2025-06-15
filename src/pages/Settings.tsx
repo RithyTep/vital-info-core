@@ -142,48 +142,53 @@ const Settings: React.FC = () => {
                 className="max-w-xs"
               />
             </div>
-            <div className="relative">
+            {/* Password Field with Eye */}
+            <div>
               <label className="block text-sm font-medium mb-1">{t("password")}</label>
-              <Input
-                type={pwVisible ? "text" : "password"}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="max-w-xs pr-10"
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
-                tabIndex={-1}
-                onClick={() => setPwVisible(v => !v)}
-                title={pwVisible ? t("hide") || "Hide" : t("show") || "Show"}
-                aria-label={pwVisible ? t("hide") || "Hide" : t("show") || "Show"}
-                style={{ background: "none", border: "none", padding: 0 }}
-              >
-                <Eye size={20} />
-              </button>
+              <div className="relative flex items-center max-w-xs">
+                <Input
+                  type={pwVisible ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="pr-10"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 p-1 text-gray-400 hover:text-gray-600"
+                  tabIndex={-1}
+                  onClick={() => setPwVisible(v => !v)}
+                  title={pwVisible ? t("hide") || "Hide" : t("show") || "Show"}
+                  aria-label={pwVisible ? t("hide") || "Hide" : t("show") || "Show"}
+                  style={{ background: "none", border: "none" }}
+                >
+                  <Eye size={20} />
+                </button>
+              </div>
             </div>
-            {/* Confirm Password */}
-            <div className="relative">
+            {/* Confirm Password Field with Eye */}
+            <div>
               <label className="block text-sm font-medium mb-1">{t("confirmPassword") || "Confirm Password"}</label>
-              <Input
-                type={cpwVisible ? "text" : "password"}
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                className="max-w-xs pr-10"
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
-                tabIndex={-1}
-                onClick={() => setCpwVisible(v => !v)}
-                title={cpwVisible ? t("hide") || "Hide" : t("show") || "Show"}
-                aria-label={cpwVisible ? t("hide") || "Hide" : t("show") || "Show"}
-                style={{ background: "none", border: "none", padding: 0 }}
-              >
-                <Eye size={20} />
-              </button>
+              <div className="relative flex items-center max-w-xs">
+                <Input
+                  type={cpwVisible ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="pr-10"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 p-1 text-gray-400 hover:text-gray-600"
+                  tabIndex={-1}
+                  onClick={() => setCpwVisible(v => !v)}
+                  title={cpwVisible ? t("hide") || "Hide" : t("show") || "Show"}
+                  aria-label={cpwVisible ? t("hide") || "Hide" : t("show") || "Show"}
+                  style={{ background: "none", border: "none" }}
+                >
+                  <Eye size={20} />
+                </button>
+              </div>
             </div>
             <Button type="submit" className="mt-2">{t("save")}</Button>
           </form>
