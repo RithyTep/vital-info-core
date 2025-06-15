@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import MiniCalendar from './MiniCalendar';
 
 const LoginForm = () => {
   const [password, setPassword] = useState('');
@@ -32,7 +32,11 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
+      {/* MiniCalendar shown above the login card */}
+      <div className="mb-6">
+        <MiniCalendar />
+      </div>
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="space-y-4 text-center">
           <div className="flex items-center justify-center space-x-2">
