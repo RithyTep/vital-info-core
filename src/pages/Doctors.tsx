@@ -1,9 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from '@/components/ui/label';
 import { Plus, Edit, Trash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +25,7 @@ const Doctors = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
+  const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     specialty: '',
@@ -79,14 +89,19 @@ const Doctors = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = (doctorId: string) => {
-    if (!confirm(t('confirmDeleteDoctor'))) return;
-    localStorageService.deleteDoctor(doctorId);
+  const handleDelete = (doctor: Doctor) => {
+    setDoctorToDelete(doctor);
+  };
+
+  const confirmDelete = () => {
+    if (!doctorToDelete) return;
+    localStorageService.deleteDoctor(doctorToDelete.id);
     toast({
       title: t('success'),
       description: t('doctorDeleted')
     });
     fetchDoctors();
+    setDoctorToDelete(null);
   };
 
   const openAddDialog = () => {
@@ -218,7 +233,7 @@ const Doctors = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(doctor.id)}
+                          onClick={() => handleDelete(doctor)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash className="h-4 w-4" />
@@ -232,6 +247,20 @@ const Doctors = () => {
           </table>
         </CardContent>
       </Card>
+      <AlertDialog open={!!doctorToDelete} onOpenChange={(open) => !open && setDoctorToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('areYouSure') || 'Are you absolutely sure?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirmDeleteDoctor')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t('delete') || 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
