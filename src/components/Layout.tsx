@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -63,9 +64,6 @@ const Layout = ({ children }: LayoutProps) => {
               </Select>
             </div>
 
-            {/* Mini Calendar */}
-            <MiniCalendar />
-
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
@@ -104,6 +102,10 @@ const Layout = ({ children }: LayoutProps) => {
                     Logout
                   </Button>
                 </li>
+                {/* Move the MiniCalendar here to be at the bottom of the sidebar */}
+                <li className="pt-4">
+                  <MiniCalendar />
+                </li>
               </ul>
             </nav>
           </div>
@@ -123,3 +125,4 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
+
