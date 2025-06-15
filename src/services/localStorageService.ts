@@ -1,4 +1,3 @@
-
 export interface Patient {
   id: string;
   name: string;
@@ -24,14 +23,18 @@ export interface Medication {
   createdAt: string;
 }
 
-export interface Prescription {
+export interface Appointment {
   id: string;
   patientId: string;
   doctorId: string;
-  medicationId: string;
-  instructions: string;
   date: string;
+  time: string;
+  reason: string;
+  status: 'Scheduled' | 'Completed' | 'Cancelled';
   createdAt: string;
+  // Optional fields for display purposes
+  patientName?: string;
+  doctorName?: string;
 }
 
 class LocalStorageService {
@@ -133,21 +136,29 @@ class LocalStorageService {
     return this.deleteItem<Medication>('hms-medications', id);
   }
 
-  // Prescriptions
-  getPrescriptions(): Prescription[] {
-    return this.getItems<Prescription>('hms-prescriptions');
+  // Appointments
+  getAppointments(): Appointment[] {
+    const appointments = this.getItems<Appointment>('hms-appointments');
+    const patients = this.getPatients();
+    const doctors = this.getDoctors();
+    // Enhance appointments with patient and doctor names for easier display
+    return appointments.map(app => ({
+      ...app,
+      patientName: patients.find(p => p.id === app.patientId)?.name,
+      doctorName: doctors.find(d => d.id === app.doctorId)?.name,
+    }));
   }
 
-  createPrescription(prescription: Omit<Prescription, 'id' | 'createdAt'>): Prescription {
-    return this.createItem<Prescription>('hms-prescriptions', prescription);
+  createAppointment(appointment: Omit<Appointment, 'id' | 'createdAt'>): Appointment {
+    return this.createItem<Appointment>('hms-appointments', appointment);
   }
 
-  updatePrescription(id: string, updates: Partial<Prescription>): Prescription | null {
-    return this.updateItem<Prescription>('hms-prescriptions', id, updates);
+  updateAppointment(id: string, updates: Partial<Appointment>): Appointment | null {
+    return this.updateItem<Appointment>('hms-appointments', id, updates);
   }
 
-  deletePrescription(id: string): boolean {
-    return this.deleteItem<Prescription>('hms-prescriptions', id);
+  deleteAppointment(id: string): boolean {
+    return this.deleteItem<Appointment>('hms-appointments', id);
   }
 }
 
