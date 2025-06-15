@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Users, UserCheck, Pill, Calendar, LayoutDashboard, LogOut, Languages } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar, LayoutDashboard, LogOut, Languages, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,7 +25,7 @@ const Layout = ({ children }: LayoutProps) => {
     { name: t('doctors'), href: '/doctors', icon: UserCheck },
     { name: t('medications'), href: '/medications', icon: Pill },
     { name: t('appointments'), href: '/appointments', icon: Calendar },
-    { name: t('settings'), href: '/settings', icon: Languages }, // Settings - use Languages/lucide for now
+    { name: t('settings'), href: '/settings', icon: Settings }, // Use the correct Settings icon for settings
   ];
 
   return (
@@ -123,3 +124,4 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
+
