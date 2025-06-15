@@ -113,8 +113,8 @@ const Dashboard = () => {
     // Convert and sort by createdAt descending (newest first)
     activities.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // Take up to 10 activities
-    setRecentActivity(activities.slice(0, 10));
+    // Take up to 5 activities (was 10)
+    setRecentActivity(activities.slice(0, 5));
 
   }, [t]);
 
