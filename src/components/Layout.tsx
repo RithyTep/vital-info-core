@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -92,6 +91,10 @@ const Layout = ({ children }: LayoutProps) => {
                     ))}
                   </ul>
                 </li>
+                {/* Move MiniCalendar here, above Logout */}
+                <li className="pt-4">
+                  <MiniCalendar />
+                </li>
                 <li className="mt-auto">
                   <Button
                     onClick={logout}
@@ -101,10 +104,6 @@ const Layout = ({ children }: LayoutProps) => {
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </Button>
-                </li>
-                {/* Move the MiniCalendar here to be at the bottom of the sidebar */}
-                <li className="pt-4">
-                  <MiniCalendar />
                 </li>
               </ul>
             </nav>
@@ -125,4 +124,3 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
-
