@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 
@@ -22,7 +21,7 @@ const CurrentTime = () => {
       <Clock className="w-5 h-5 text-blue-600" />
       <span className="text-base font-semibold text-gray-800">
         {time.toLocaleTimeString("en-US", {
-          hour12: false,
+          hour12: true, // Use 12-hour format
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
@@ -35,4 +34,3 @@ const CurrentTime = () => {
 };
 
 export default CurrentTime;
-
