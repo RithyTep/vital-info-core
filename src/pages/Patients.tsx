@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -159,12 +158,6 @@ const Patients = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const openAddDialog = () => {
-    setEditingPatient(null);
-    setFormData(defaultFormData);
-    setDialogOpen(true);
   };
 
   if (loading) {
