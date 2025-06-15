@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 type NewPatientForm = {
   name: string;
@@ -41,6 +42,7 @@ type NewPatientForm = {
   gender: string;
   dob: Date | undefined;
   address: string;
+  profilePicture: string;
 };
 
 const defaultFormData: NewPatientForm = {
@@ -50,10 +52,11 @@ const defaultFormData: NewPatientForm = {
   gender: "",
   dob: undefined,
   address: "",
+  profilePicture: "",
 };
 
 const Patients = () => {
-  const [patients, setPatients] = useState<(Patient & { email?: string; phone?: string; gender?: string; dob?: string; address?: string })[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
@@ -96,6 +99,17 @@ const Patients = () => {
     }
   };
 
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profilePicture: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -109,6 +123,7 @@ const Patients = () => {
         address: formData.address,
         age: formData.dob ? new Date().getFullYear() - formData.dob.getFullYear() : 0,
         medicalHistory: editingPatient?.medicalHistory || "",
+        profilePicture: formData.profilePicture,
       };
       if (editingPatient) {
         localStorageService.updatePatient(editingPatient.id, patientInfo);
@@ -143,11 +158,12 @@ const Patients = () => {
     setEditingPatient(patient);
     setFormData({
       name: patient.name || "",
-      email: (patient as any).email || "",
+      email: patient.email || "",
       phone: patient.contact || "",
-      gender: (patient as any).gender || "",
-      dob: (patient as any).dob ? new Date((patient as any).dob) : undefined,
-      address: (patient as any).address || "",
+      gender: patient.gender || "",
+      dob: patient.dob ? new Date(patient.dob) : undefined,
+      address: patient.address || "",
+      profilePicture: patient.profilePicture || "",
     });
     setDialogOpen(true);
   };
@@ -217,23 +233,39 @@ const Patients = () => {
             <DialogContent className="sm:max-w-[480px]">
               <DialogHeader>
                 <DialogTitle>
-                  {editingPatient ? t('editPatient') : t('addNewPatient')}
+                  {editingPatient ? t('updatePatient') : t('addNewPatient')}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <p className="text-gray-500 text-sm">{t('patientInfoPrompt')}</p>
                 <div className="space-y-2">
-                  <Label htmlFor="name">{t('fullName')}</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
+                  <Label htmlFor="profilePicture">Profile Picture</Label>
+                  <div className="flex items-center gap-4">
+                    <Avatar>
+                      <AvatarImage src={formData.profilePicture} alt={formData.name} />
+                      <AvatarFallback>{formData.name ? formData.name.charAt(0).toUpperCase() : 'P'}</AvatarFallback>
+                    </Avatar>
+                    <Input
+                      id="profilePicture"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePictureChange}
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-2">
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="name">{t('fullName')}</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
                   <div className="space-y-2 flex-1">
                     <Label htmlFor="email">{t('email')}</Label>
                     <Input
@@ -245,6 +277,8 @@ const Patients = () => {
                       }
                     />
                   </div>
+                </div>
+                <div className="flex gap-2">
                   <div className="space-y-2 flex-1">
                     <Label htmlFor="phone">{t('phoneNumber')}</Label>
                     <Input
@@ -256,8 +290,6 @@ const Patients = () => {
                       }
                     />
                   </div>
-                </div>
-                <div className="flex gap-2">
                   <div className="space-y-2 flex-1">
                     <Label htmlFor="gender">{t('gender')}</Label>
                     <Select
@@ -274,6 +306,8 @@ const Patients = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="flex gap-2">
                   <div className="space-y-2 flex-1">
                     <Label htmlFor="dob">{t('dateOfBirth')}</Label>
                     <Popover>
@@ -301,17 +335,17 @@ const Patients = () => {
                       </PopoverContent>
                     </Popover>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">{t('address')}</Label>
-                  <Textarea
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
-                    }
-                    rows={2}
-                  />
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="address">{t('address')}</Label>
+                    <Textarea
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                      rows={2}
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button type="button" variant="outline" onClick={() => {
@@ -357,6 +391,7 @@ const Patients = () => {
             <TableCaption>{t('allRegisteredPatients')}</TableCaption>
             <TableHeader>
               <TableRow>
+                <TableHead></TableHead>
                 <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('email')}</TableHead>
                 <TableHead>{t('phoneNumber')}</TableHead>
@@ -369,12 +404,18 @@ const Patients = () => {
             <TableBody>
               {patients.map((patient) => (
                 <TableRow key={patient.id} className="hover:bg-accent transition-colors">
+                  <TableCell>
+                    <Avatar>
+                      <AvatarImage src={patient.profilePicture} alt={patient.name} />
+                      <AvatarFallback>{patient.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </TableCell>
                   <TableCell>{patient.name}</TableCell>
-                  <TableCell>{(patient as any).email}</TableCell>
+                  <TableCell>{patient.email}</TableCell>
                   <TableCell>{patient.contact}</TableCell>
-                  <TableCell>{(patient as any).gender}</TableCell>
-                  <TableCell>{(patient as any).dob}</TableCell>
-                  <TableCell>{(patient as any).address}</TableCell>
+                  <TableCell>{patient.gender}</TableCell>
+                  <TableCell>{patient.dob}</TableCell>
+                  <TableCell>{patient.address}</TableCell>
                   <TableCell className="flex justify-end gap-2">
                     <Button
                       variant="outline"

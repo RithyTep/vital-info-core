@@ -1,3 +1,4 @@
+
 export interface Patient {
   id: string;
   name: string;
@@ -5,6 +6,11 @@ export interface Patient {
   contact: string;
   medicalHistory: string;
   createdAt: string;
+  email?: string;
+  gender?: string;
+  dob?: string;
+  address?: string;
+  profilePicture?: string;
 }
 
 export interface Doctor {
