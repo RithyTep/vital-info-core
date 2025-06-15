@@ -12,6 +12,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Stats {
   patients: number;
@@ -28,6 +29,7 @@ const Dashboard = () => {
     appointments: 0
   });
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const patients = localStorageService.getPatients();
@@ -45,28 +47,28 @@ const Dashboard = () => {
 
   const statCards = [
     {
-      title: 'Total Patients',
+      title: t('totalPatients'),
       value: stats.patients,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
     {
-      title: 'Total Doctors',
+      title: t('totalDoctors'),
       value: stats.doctors,
       icon: UserCheck,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
     },
     {
-      title: 'Medications',
+      title: t('medications'),
       value: stats.medications,
       icon: Pill,
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-100'
     },
     {
-      title: 'Appointments',
+      title: t('appointments'),
       value: stats.appointments,
       icon: Calendar,
       color: 'text-pink-600',
@@ -76,38 +78,38 @@ const Dashboard = () => {
 
   const chartConfig = {
     total: {
-      label: 'Total',
+      label: t('totalPatients'),
     },
     patients: {
-      label: 'Patients',
+      label: t('patients'),
       color: 'hsl(var(--chart-1))',
     },
     doctors: {
-      label: 'Doctors',
+      label: t('doctors'),
       color: 'hsl(var(--chart-2))',
     },
     medications: {
-      label: 'Medications',
+      label: t('medications'),
       color: 'hsl(var(--chart-3))',
     },
     appointments: {
-        label: 'Appointments',
+        label: t('appointments'),
         color: 'hsl(var(--chart-4))',
     }
   } satisfies ChartConfig;
 
   const chartData = [
-    { name: 'Patients', total: stats.patients, fill: 'var(--color-patients)' },
-    { name: 'Doctors', total: stats.doctors, fill: 'var(--color-doctors)' },
-    { name: 'Medications', total: stats.medications, fill: 'var(--color-medications)' },
-    { name: 'Appointments', total: stats.appointments, fill: 'var(--color-appointments)' },
+    { name: t('patients'), total: stats.patients, fill: 'var(--color-patients)' },
+    { name: t('doctors'), total: stats.doctors, fill: 'var(--color-doctors)' },
+    { name: t('medications'), total: stats.medications, fill: 'var(--color-medications)' },
+    { name: t('appointments'), total: stats.appointments, fill: 'var(--color-appointments)' },
   ];
 
   return (
     <div className="p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome to your modern Hospital Management System</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard')}</h1>
+        <p className="text-gray-600">{t("Welcome to your modern Hospital Management System")}</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -131,38 +133,38 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>{t('quickActions')}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col space-y-3">
             <Button variant="outline" onClick={() => navigate('/patients?action=add')}>
-              <UserPlus className="mr-2 h-4 w-4" /> Add New Patient
+              <UserPlus className="mr-2 h-4 w-4" /> {t('addNewPatient')}
             </Button>
             <Button variant="outline" onClick={() => navigate('/doctors?action=add')}>
-              <UserCheck className="mr-2 h-4 w-4" /> Add New Doctor
+              <UserCheck className="mr-2 h-4 w-4" /> {t('addDoctor')}
             </Button>
             <Button variant="outline" onClick={() => navigate('/appointments?action=add')}>
-              <Calendar className="mr-2 h-4 w-4" /> Schedule Appointment
+              <Calendar className="mr-2 h-4 w-4" /> {t('addAppointment')}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{t('recentActivity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <p className="text-sm text-gray-600">System initialized successfully</p>
+                <p className="text-sm text-gray-600">{t('System initialized successfully') || 'System initialized successfully'}</p>
               </div>
               <div className="flex items-center space-x-3">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <p className="text-sm text-gray-600">HMS Dashboard loaded</p>
+                <p className="text-sm text-gray-600">{t('HMS Dashboard loaded') || 'HMS Dashboard loaded'}</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Users className="h-4 w-4 text-blue-500" />
-                <p className="text-sm text-gray-600">New patient "John Doe" registered.</p>
+                <p className="text-sm text-gray-600">{t('New patient "John Doe" registered.') || 'New patient "John Doe" registered.'}</p>
               </div>
             </div>
           </CardContent>
@@ -172,7 +174,7 @@ const Dashboard = () => {
       <Card>
         <CardHeader className="flex flex-row items-center gap-2">
           <BarChartIcon className="h-6 w-6" />
-          <CardTitle>System Overview</CardTitle>
+          <CardTitle>{t('System Overview') || 'System Overview'}</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -212,3 +214,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
