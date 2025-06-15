@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Users, UserCheck, Pill, FileText, LayoutDashboard, LogOut, Languages } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar, FileText, LayoutDashboard, LogOut, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +22,9 @@ const Layout = ({ children }: LayoutProps) => {
     { name: t('patients'), href: '/patients', icon: Users },
     { name: t('doctors'), href: '/doctors', icon: UserCheck },
     { name: t('medications'), href: '/medications', icon: Pill },
-    { name: t('prescriptions'), href: '/prescriptions', icon: FileText },
+    // Add Appointments tab and remove the Prescriptions tab
+    { name: t('appointments') || 'Appointments', href: '/appointments', icon: Calendar },
+    // Removed: { name: t('prescriptions'), href: '/prescriptions', icon: FileText },
   ];
 
   return (
@@ -117,3 +119,4 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
+
