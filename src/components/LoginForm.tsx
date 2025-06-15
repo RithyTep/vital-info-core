@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import MiniCalendar from './MiniCalendar';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 const LoginForm = () => {
   const [adminName, setAdminName] = useState('');
@@ -64,29 +64,33 @@ const LoginForm = () => {
         <CardHeader className="space-y-4 text-center">
           <div className="flex items-center justify-center space-x-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold animate-bounce">H</div>
-            <h1 className="text-2xl font-bold text-blue-600 animate-fade-in">{t('hms', {defaultValue: 'HMS'})}</h1>
+            <h1 className="text-2xl font-bold text-blue-600 animate-fade-in">{t('hms')}</h1>
           </div>
           <CardTitle className="text-xl">{t('loginRequired')}</CardTitle>
           <div className="flex items-center justify-center space-x-2">
-            <span className={language === 'en' ? 'font-semibold' : ''}>EN</span>
-            <Switch
-              checked={language === 'km'}
-              onCheckedChange={(checked) => setLanguage(checked ? 'km' : 'en')}
-            />
-            <span className={language === 'km' ? 'font-semibold' : ''}>ខ្មែរ</span>
+            <span className="text-sm text-gray-600">{t('language')}</span>
+            <Select value={language} onValueChange={(value) => setLanguage(value as 'en' | 'km')}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder={t('language')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="km">ខ្មែរ</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* New Name Field */}
             <div className="space-y-2">
-              <Label htmlFor="adminName">{t('adminName', {defaultValue: "Admin Name"})}</Label>
+              <Label htmlFor="adminName">{t('adminName')}</Label>
               <Input
                 id="adminName"
                 type="text"
                 value={adminName}
                 onChange={(e) => setAdminName(e.target.value)}
-                placeholder={t('adminName', {defaultValue: "Admin Name"})}
+                placeholder={t('adminName')}
                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
                 autoComplete="username"
                 required
