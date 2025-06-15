@@ -62,7 +62,7 @@ const Dashboard = () => {
         label: t('patients'),
         icon: <Users className="h-4 w-4 text-blue-500" />,
         createdAt: new Date(p.createdAt),
-        description: t('New patient "{{name}}" registered.', { name: p.name }) || `New patient "${p.name}" registered.`
+        description: `${t('New patient')} "${p.name}" ${t('registered.')}`
       })
     );
 
@@ -72,7 +72,7 @@ const Dashboard = () => {
         label: t('doctors'),
         icon: <UserCheck className="h-4 w-4 text-green-500" />,
         createdAt: new Date(d.createdAt),
-        description: t('Doctor "{{name}}" added.', { name: d.name }) || `Doctor "${d.name}" added.`
+        description: `${t('Doctor')} "${d.name}" ${t('added.')}`
       })
     );
 
@@ -82,7 +82,7 @@ const Dashboard = () => {
         label: t('medications'),
         icon: <Pill className="h-4 w-4 text-indigo-500" />,
         createdAt: new Date(m.createdAt),
-        description: t('Medication "{{name}}" added.', { name: m.name }) || `Medication "${m.name}" added.`
+        description: `${t('Medication')} "${m.name}" ${t('added.')}`
       })
     );
 
@@ -93,11 +93,7 @@ const Dashboard = () => {
         icon: <Calendar className="h-4 w-4 text-pink-500" />,
         createdAt: new Date(a.createdAt),
         description:
-          t('Appointment for "{{patient}}" with Dr. {{doctor}} scheduled.', {
-            patient: a.patientName || t('Unknown Patient'),
-            doctor: a.doctorName || t('Unknown Doctor'),
-          }) ||
-          `Appointment for "${a.patientName || 'Unknown'}" with Dr. ${a.doctorName || 'Unknown'} scheduled.`
+          `${t('Appointment for')} "${a.patientName || t('Unknown Patient')}" ${t('with Dr.')} ${a.doctorName || t('Unknown Doctor')} ${t('scheduled.')}`
       })
     );
 
