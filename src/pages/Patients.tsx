@@ -1,30 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  Button,
-  Input,
-  Textarea,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  Label,
-  Plus,
-  Edit,
-  Trash,
-  Table as TableIcon,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Calendar,
-  CalendarIcon,
-} from "@/components/ui";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Plus, Edit, Trash, Table as TableIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -134,7 +118,7 @@ const Patients = () => {
       email: (patient as any).email || "",
       phone: patient.contact || "",
       gender: (patient as any).gender || "",
-      dob: patient.dob ? new Date(patient.dob) : undefined,
+      dob: (patient as any).dob ? new Date((patient as any).dob) : undefined,
       address: (patient as any).address || "",
     });
     setDialogOpen(true);
