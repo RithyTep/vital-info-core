@@ -21,6 +21,14 @@ interface Stats {
   appointments: number;
 }
 
+interface ActivityEvent {
+  type: 'patient' | 'doctor' | 'medication' | 'appointment' | 'system';
+  label: string;
+  icon: React.ReactNode;
+  createdAt: Date;
+  description: string;
+}
+
 const Dashboard = () => {
   const [stats, setStats] = useState<Stats>({
     patients: 0,
@@ -28,6 +36,7 @@ const Dashboard = () => {
     medications: 0,
     appointments: 0
   });
+  const [recentActivity, setRecentActivity] = useState<ActivityEvent[]>([]);
   const navigate = useNavigate();
   const { t } = useLanguage();
 
@@ -43,7 +52,75 @@ const Dashboard = () => {
       medications: medications.length,
       appointments: appointments.length
     });
-  }, []);
+
+    // Collect activity events from all sources
+    let activities: ActivityEvent[] = [];
+
+    patients.forEach((p) =>
+      activities.push({
+        type: 'patient',
+        label: t('patients'),
+        icon: <Users className="h-4 w-4 text-blue-500" />,
+        createdAt: new Date(p.createdAt),
+        description: t('New patient "{{name}}" registered.', { name: p.name }) || `New patient "${p.name}" registered.`
+      })
+    );
+
+    doctors.forEach((d) =>
+      activities.push({
+        type: 'doctor',
+        label: t('doctors'),
+        icon: <UserCheck className="h-4 w-4 text-green-500" />,
+        createdAt: new Date(d.createdAt),
+        description: t('Doctor "{{name}}" added.', { name: d.name }) || `Doctor "${d.name}" added.`
+      })
+    );
+
+    medications.forEach((m) =>
+      activities.push({
+        type: 'medication',
+        label: t('medications'),
+        icon: <Pill className="h-4 w-4 text-indigo-500" />,
+        createdAt: new Date(m.createdAt),
+        description: t('Medication "{{name}}" added.', { name: m.name }) || `Medication "${m.name}" added.`
+      })
+    );
+
+    appointments.forEach((a) =>
+      activities.push({
+        type: 'appointment',
+        label: t('appointments'),
+        icon: <Calendar className="h-4 w-4 text-pink-500" />,
+        createdAt: new Date(a.createdAt),
+        description:
+          t('Appointment for "{{patient}}" with Dr. {{doctor}} scheduled.', {
+            patient: a.patientName || t('Unknown Patient'),
+            doctor: a.doctorName || t('Unknown Doctor'),
+          }) ||
+          `Appointment for "${a.patientName || 'Unknown'}" with Dr. ${a.doctorName || 'Unknown'} scheduled.`
+      })
+    );
+
+    // Add fixed system events if list is empty
+    if (activities.length === 0) {
+      activities.push(
+        {
+          type: 'system',
+          label: 'system',
+          icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+          createdAt: new Date(),
+          description: t('System initialized successfully') || 'System initialized successfully'
+        }
+      );
+    }
+
+    // Convert and sort by createdAt descending (newest first)
+    activities.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // Take up to 10 activities
+    setRecentActivity(activities.slice(0, 10));
+
+  }, [t]);
 
   const statCards = [
     {
@@ -152,24 +229,34 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* REAL Recent Activity */}
         <Card>
           <CardHeader>
             <CardTitle>{t('recentActivity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <p className="text-sm text-gray-600">{t('System initialized successfully') || 'System initialized successfully'}</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <p className="text-sm text-gray-600">{t('HMS Dashboard loaded') || 'HMS Dashboard loaded'}</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Users className="h-4 w-4 text-blue-500" />
-                <p className="text-sm text-gray-600">{t('New patient "John Doe" registered.') || 'New patient "John Doe" registered.'}</p>
-              </div>
+              {recentActivity.length === 0 ? (
+                <div className="text-sm text-gray-400">{t("No recent activity found")}</div>
+              ) : (
+                recentActivity.map((item, idx) => (
+                  <div key={idx} className="flex items-center space-x-3">
+                    {item.icon}
+                    <div>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                      <div className="text-xs text-gray-500">
+                        {item.createdAt.toLocaleString(undefined, {
+                          year: "2-digit",
+                          month: "short",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
