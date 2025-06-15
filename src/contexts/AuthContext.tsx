@@ -9,8 +9,22 @@ interface AuthContextType {
 }
 
 const AUTH_TOKEN_KEY = 'hms-auth-token';
-const CORRECT_PASSWORD = '5569';
+const ADMIN_PROFILE_KEY = 'hms-admin-profile';
+const DEFAULT_PASSWORD = '5569';
 const TOKEN_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+function getAdminPassword(): string {
+  const admin = localStorage.getItem(ADMIN_PROFILE_KEY);
+  if (admin) {
+    try {
+      const { password } = JSON.parse(admin);
+      return password || DEFAULT_PASSWORD;
+    } catch {
+      return DEFAULT_PASSWORD;
+    }
+  }
+  return DEFAULT_PASSWORD;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -37,7 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = (password: string): boolean => {
-    if (password === CORRECT_PASSWORD) {
+    const adminPassword = getAdminPassword();
+    if (password === adminPassword) {
       const tokenData = {
         timestamp: new Date().getTime(),
         authenticated: true
