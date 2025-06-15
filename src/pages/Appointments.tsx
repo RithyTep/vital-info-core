@@ -14,6 +14,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableCap
 import { localStorageService, Appointment, Patient, Doctor } from "@/services/localStorageService";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type NewAppointmentForm = {
   patientId: string;
@@ -42,6 +43,7 @@ const Appointments = () => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [formData, setFormData] = useState<NewAppointmentForm>(defaultFormData);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchData();
@@ -54,8 +56,8 @@ const Appointments = () => {
       setDoctors(localStorageService.getDoctors());
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch data",
+        title: t("error"),
+        description: t("fetchDataFailed"),
         variant: "destructive",
       });
     } finally {
@@ -67,7 +69,7 @@ const Appointments = () => {
     e.preventDefault();
 
     if (!formData.date) {
-      toast({ title: "Error", description: "Please select a date.", variant: "destructive" });
+      toast({ title: t("error"), description: t("dateRequired"), variant: "destructive" });
       return;
     }
 
@@ -83,10 +85,10 @@ const Appointments = () => {
 
       if (editingAppointment) {
         localStorageService.updateAppointment(editingAppointment.id, appointmentInfo);
-        toast({ title: "Success", description: "Appointment updated successfully" });
+        toast({ title: t("success"), description: t("appointmentUpdatedSuccess") });
       } else {
         localStorageService.createAppointment(appointmentInfo);
-        toast({ title: "Success", description: "Appointment added successfully" });
+        toast({ title: t("success"), description: t("appointmentAddedSuccess") });
       }
 
       setDialogOpen(false);
@@ -94,7 +96,7 @@ const Appointments = () => {
       setFormData(defaultFormData);
       fetchData();
     } catch (error) {
-      toast({ title: "Error", description: "Failed to save appointment", variant: "destructive" });
+      toast({ title: t("error"), description: t("appointmentSaveFailed"), variant: "destructive" });
     }
   };
 
@@ -112,15 +114,15 @@ const Appointments = () => {
   };
 
   const handleDelete = (appointmentId: string) => {
-    if (!confirm("Are you sure you want to delete this appointment?")) {
+    if (!confirm(t("confirmDeleteAppointment"))) {
       return;
     }
     try {
       localStorageService.deleteAppointment(appointmentId);
-      toast({ title: "Success", description: "Appointment deleted successfully" });
+      toast({ title: t("success"), description: t("appointmentDeletedSuccess") });
       fetchData();
     } catch (error) {
-      toast({ title: "Error", description: "Failed to delete appointment", variant: "destructive" });
+      toast({ title: t("error"), description: t("appointmentDeleteFailed"), variant: "destructive" });
     }
   };
 
@@ -134,11 +136,11 @@ const Appointments = () => {
     return (
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t("appointments")}</h1>
         </div>
         <div className="flex items-center justify-center py-20">
           <TableIcon className="animate-spin w-8 h-8 text-blue-400 mr-3" />
-          <span className="text-lg text-gray-500">Loading...</span>
+          <span className="text-lg text-gray-500">{t("loading")}</span>
         </div>
       </div>
     );
@@ -147,40 +149,40 @@ const Appointments = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-blue-800">Appointments</h1>
+        <h1 className="text-3xl font-bold text-blue-800">{t("appointments")}</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={openAddDialog} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
-              Add Appointment
+              {t("addAppointment")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[480px]">
             <DialogHeader>
-              <DialogTitle>{editingAppointment ? "Edit Appointment" : "Add New Appointment"}</DialogTitle>
+              <DialogTitle>{editingAppointment ? t("editAppointment") : t("addNewAppointment")}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="patientId">Patient</Label>
+                <Label htmlFor="patientId">{t("patientName")}</Label>
                 <Select value={formData.patientId} onValueChange={value => setFormData({ ...formData, patientId: value })} required>
-                  <SelectTrigger id="patientId"><SelectValue placeholder="Select a patient" /></SelectTrigger>
+                  <SelectTrigger id="patientId"><SelectValue placeholder={t("selectPatient")} /></SelectTrigger>
                   <SelectContent>{patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="doctorId">Doctor</Label>
+                <Label htmlFor="doctorId">{t("doctorName")}</Label>
                 <Select value={formData.doctorId} onValueChange={value => setFormData({ ...formData, doctorId: value })} required>
-                  <SelectTrigger id="doctorId"><SelectValue placeholder="Select a doctor" /></SelectTrigger>
+                  <SelectTrigger id="doctorId"><SelectValue placeholder={t("selectDoctor")} /></SelectTrigger>
                   <SelectContent>{doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name} ({d.specialty})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="flex gap-2">
                 <div className="space-y-2 flex-1">
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="date">{t("dateOfBirth")}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button type="button" variant="outline" className={`w-full justify-start text-left font-normal ${!formData.date ? "text-muted-foreground" : ""}`}>
-                        {formData.date ? format(formData.date, "yyyy-MM-dd") : <span>Pick a date</span>}
+                        {formData.date ? format(formData.date, "yyyy-MM-dd") : <span>{t("pickDate")}</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -190,28 +192,28 @@ const Appointments = () => {
                   </Popover>
                 </div>
                 <div className="space-y-2 flex-1">
-                  <Label htmlFor="time">Time</Label>
+                  <Label htmlFor="time">{t("time")}</Label>
                   <Input id="time" type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} required />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="reason">Reason for visit</Label>
+                <Label htmlFor="reason">{t("reasonForVisit")}</Label>
                 <Textarea id="reason" value={formData.reason} onChange={e => setFormData({ ...formData, reason: e.target.value })} rows={2} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">{t("status")}</Label>
                 <Select value={formData.status} onValueChange={value => setFormData({ ...formData, status: value as any })} required>
-                  <SelectTrigger id="status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectTrigger id="status"><SelectValue placeholder={t("selectStatus")} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    <SelectItem value="Scheduled">{t("scheduled")}</SelectItem>
+                    <SelectItem value="Completed">{t("completed")}</SelectItem>
+                    <SelectItem value="Cancelled">{t("cancelled")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{editingAppointment ? "Update Appointment" : "Create Appointment"}</Button>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("cancel")}</Button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{editingAppointment ? t("updateAppointment") : t("createAppointment")}</Button>
               </div>
             </form>
           </DialogContent>
@@ -221,27 +223,27 @@ const Appointments = () => {
       {appointments.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center justify-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
-            <p className="text-gray-600 mb-4">Get started by scheduling your first appointment.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t("noAppointmentsFound")}</h3>
+            <p className="text-gray-600 mb-4">{t("getStartedAppointment")}</p>
             <Button onClick={openAddDialog} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
-              Add Appointment
+              {t("addAppointment")}
             </Button>
           </div>
         </Card>
       ) : (
         <div className="bg-white/90 rounded-lg shadow border p-4">
           <Table>
-            <TableCaption>All Scheduled Appointments</TableCaption>
+            <TableCaption>{t("allScheduledAppointments")}</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Doctor</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("patientName")}</TableHead>
+                <TableHead>{t("doctorName")}</TableHead>
+                <TableHead>{t("dateOfBirth")}</TableHead>
+                <TableHead>{t("time")}</TableHead>
+                <TableHead>{t("reasonForVisit")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

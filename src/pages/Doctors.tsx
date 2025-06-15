@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,13 +42,13 @@ const Doctors = () => {
         localStorageService.updateDoctor(editingDoctor.id, formData);
         toast({
           title: t('success'),
-          description: t('doctorUpdated') || 'Doctor updated successfully'
+          description: t('doctorUpdated')
         });
       } else {
         localStorageService.createDoctor(formData);
         toast({
           title: t('success'),
-          description: t('doctorAdded') || 'Doctor added successfully'
+          description: t('doctorAdded')
         });
       }
       setDialogOpen(false);
@@ -59,7 +58,7 @@ const Doctors = () => {
     } catch {
       toast({
         title: t('error'),
-        description: t('doctorFailedSave') || 'Failed to save doctor',
+        description: t('doctorFailedSave'),
         variant: 'destructive'
       });
     }
@@ -76,11 +75,11 @@ const Doctors = () => {
   };
 
   const handleDelete = (doctorId: string) => {
-    if (!confirm(t('confirmDeleteDoctor') || 'Are you sure you want to delete this doctor?')) return;
+    if (!confirm(t('confirmDeleteDoctor'))) return;
     localStorageService.deleteDoctor(doctorId);
     toast({
       title: t('success'),
-      description: t('doctorDeleted') || 'Doctor deleted successfully'
+      description: t('doctorDeleted')
     });
     fetchDoctors();
   };
@@ -90,22 +89,6 @@ const Doctors = () => {
     setFormData({ name: '', specialty: '', contact: '' });
     setDialogOpen(true);
   };
-
-  // Translation additions for custom toast/text if not in context
-  const customTranslations: { [key: string]: { [key: string]: string } } = {
-    success: { en: 'Success', km: 'ជោគជ័យ' },
-    error: { en: 'Error', km: 'បរាជ័យ' },
-    doctorUpdated: { en: 'Doctor updated successfully', km: 'កែប្រែវេជ្ជបណ្ឌិតបានជោគជ័យ' },
-    doctorAdded: { en: 'Doctor added successfully', km: 'បន្ថែមវេជ្ជបណ្ឌិតបានជោគជ័យ' },
-    doctorDeleted: { en: 'Doctor deleted successfully', km: 'លុបវេជ្ជបណ្ឌិតបានជោគជ័យ' },
-    doctorFailedSave: { en: 'Failed to save doctor', km: 'បរាជ័យក្នុងការរក្សាទុកវេជ្ជបណ្ឌិត' },
-    confirmDeleteDoctor: { en: 'Are you sure you want to delete this doctor?', km: 'តើអ្នកប្រាកដថាចង់លុបវេជ្ជបណ្ឌិតនេះមែនទេ?' },
-    noDoctorsFound: { en: 'No doctors found', km: 'មិនមានវេជ្ជបណ្ឌិត' }
-  };
-
-  function tCustom(key: string) {
-    return t(key) || customTranslations[key]?.[language] || key;
-  }
 
   return (
     <div className="p-6 space-y-6">
@@ -186,7 +169,7 @@ const Doctors = () => {
             <tbody>
               {doctors.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center text-gray-400 py-6">{tCustom('noDoctorsFound')}</td>
+                  <td colSpan={4} className="text-center text-gray-400 py-6">{t('noDoctorsFound')}</td>
                 </tr>
               ) : (
                 doctors.map((doctor) => (

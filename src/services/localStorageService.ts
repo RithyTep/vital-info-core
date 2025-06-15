@@ -21,6 +21,7 @@ export interface Medication {
   dosage: string;
   stockQuantity: number;
   createdAt: string;
+  imageUrl?: string;
 }
 
 export interface Appointment {

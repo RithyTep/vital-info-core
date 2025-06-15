@@ -20,7 +20,8 @@ const Medications = () => {
   const [formData, setFormData] = useState({
     name: '',
     dosage: '',
-    stockQuantity: 0
+    stockQuantity: 0,
+    imageUrl: ''
   });
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -35,12 +36,23 @@ const Medications = () => {
       setMedications(data);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to fetch medications',
+        title: t('error'),
+        description: t('fetchMedicationsFailed'),
         variant: 'destructive'
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -49,29 +61,27 @@ const Medications = () => {
     
     try {
       if (editingMedication) {
-        const updated = localStorageService.updateMedication(editingMedication.id, formData);
-        if (updated) {
-          toast({
-            title: 'Success',
-            description: 'Medication updated successfully',
-          });
-        }
+        localStorageService.updateMedication(editingMedication.id, formData);
+        toast({
+          title: t('success'),
+          description: t('medicationUpdatedSuccess'),
+        });
       } else {
         localStorageService.createMedication(formData);
         toast({
-          title: 'Success',
-          description: 'Medication added successfully',
+          title: t('success'),
+          description: t('medicationAddedSuccess'),
         });
       }
 
       setDialogOpen(false);
       setEditingMedication(null);
-      setFormData({ name: '', dosage: '', stockQuantity: 0 });
+      setFormData({ name: '', dosage: '', stockQuantity: 0, imageUrl: '' });
       fetchMedications();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to save medication',
+        title: t('error'),
+        description: t('medicationSaveFailed'),
         variant: 'destructive'
       });
     }
@@ -82,29 +92,28 @@ const Medications = () => {
     setFormData({
       name: medication.name,
       dosage: medication.dosage,
-      stockQuantity: medication.stockQuantity
+      stockQuantity: medication.stockQuantity,
+      imageUrl: medication.imageUrl || ''
     });
     setDialogOpen(true);
   };
 
   const handleDelete = (medicationId: string) => {
-    if (!confirm('Are you sure you want to delete this medication?')) {
+    if (!confirm(t('confirmDeleteMedication'))) {
       return;
     }
 
     try {
-      const success = localStorageService.deleteMedication(medicationId);
-      if (success) {
-        toast({
-          title: 'Success',
-          description: 'Medication deleted successfully',
-        });
-        fetchMedications();
-      }
+      localStorageService.deleteMedication(medicationId);
+      toast({
+        title: t('success'),
+        description: t('medicationDeletedSuccess'),
+      });
+      fetchMedications();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to delete medication',
+        title: t('error'),
+        description: t('medicationDeleteFailed'),
         variant: 'destructive'
       });
     }
@@ -122,7 +131,7 @@ const Medications = () => {
 
   const openAddDialog = () => {
     setEditingMedication(null);
-    setFormData({ name: '', dosage: '', stockQuantity: 0 });
+    setFormData({ name: '', dosage: '', stockQuantity: 0, imageUrl: '' });
     setDialogOpen(true);
   };
 
@@ -217,6 +226,17 @@ const Medications = () => {
                     min="0"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="image">{t('image')}</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+                  />
+                  {formData.imageUrl && <img src={formData.imageUrl} alt="Preview" className="mt-2 h-20 w-20 object-cover rounded" />}
+                </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                   {editingMedication ? t('save') : t('addMedication')}
                 </Button>
@@ -241,8 +261,8 @@ const Medications = () => {
         <Card className="bg-white/70 backdrop-blur-sm">
           <CardContent className="flex items-center justify-center py-12">
             <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No medications found</h3>
-              <p className="text-gray-600 mb-4">Get started by adding your first medication.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t("noMedicationsFound")}</h3>
+              <p className="text-gray-600 mb-4">{t("getStartedMedication")}</p>
               <Button onClick={openAddDialog} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                 <Plus className="h-4 w-4 mr-2" />
                 {t('addMedication')}
@@ -280,6 +300,7 @@ const Medications = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {medication.imageUrl && <img src={medication.imageUrl} alt={medication.name} className="mb-3 h-32 w-full object-cover rounded-md" />}
                   <p className="text-sm text-gray-600">
                     <strong>{t('dosage')}:</strong> {medication.dosage}
                   </p>
