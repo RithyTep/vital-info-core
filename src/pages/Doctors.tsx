@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { localStorageService, Doctor } from '@/services/localStorageService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Doctors = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -31,7 +32,8 @@ const Doctors = () => {
     specialty: '',
     contact: '',
     email: '',
-    address: ''
+    address: '',
+    profilePicture: ''
   });
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
@@ -46,6 +48,17 @@ const Doctors = () => {
     const allDoctors = localStorageService.getDoctors();
     setDoctors(allDoctors);
     setLoading(false);
+  };
+
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profilePicture: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,7 +79,7 @@ const Doctors = () => {
       }
       setDialogOpen(false);
       setEditingDoctor(null);
-      setFormData({ name: '', specialty: '', contact: '', email: '', address: '' });
+      setFormData({ name: '', specialty: '', contact: '', email: '', address: '', profilePicture: '' });
       fetchDoctors();
     } catch {
       toast({
@@ -84,7 +97,8 @@ const Doctors = () => {
       specialty: doctor.specialty,
       contact: doctor.contact,
       email: doctor.email || '',
-      address: doctor.address || ''
+      address: doctor.address || '',
+      profilePicture: (doctor as any).profilePicture || ''
     });
     setDialogOpen(true);
   };
@@ -106,7 +120,7 @@ const Doctors = () => {
 
   const openAddDialog = () => {
     setEditingDoctor(null);
-    setFormData({ name: '', specialty: '', contact: '', email: '', address: '' });
+    setFormData({ name: '', specialty: '', contact: '', email: '', address: '', profilePicture: '' });
     setDialogOpen(true);
   };
 
@@ -140,6 +154,22 @@ const Doctors = () => {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="profilePicture">Profile Picture</Label>
+                  <div className="flex items-center gap-4">
+                    <Avatar>
+                      <AvatarImage src={formData.profilePicture} alt={formData.name} />
+                      <AvatarFallback>{formData.name ? formData.name.charAt(0).toUpperCase() : 'D'}</AvatarFallback>
+                    </Avatar>
+                    <Input
+                      id="profilePicture"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePictureChange}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="name">{t('name')}</Label>
                   <Input
@@ -197,6 +227,7 @@ const Doctors = () => {
           <table className="min-w-full text-sm bg-white">
             <thead>
               <tr className="bg-gray-100 text-gray-700">
+                <th className="px-4 py-2"></th>
                 <th className="px-4 py-2 text-left">{t("name")}</th>
                 <th className="px-4 py-2 text-left">{t("specialty")}</th>
                 <th className="px-4 py-2 text-left">{t("contact")}</th>
@@ -208,7 +239,7 @@ const Doctors = () => {
             <tbody>
               {doctors.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-400 py-6">{t('noDoctorsFound')}</td>
+                  <td colSpan={7} className="text-center text-gray-400 py-6">{t('noDoctorsFound')}</td>
                 </tr>
               ) : (
                 doctors.map((doctor) => (
@@ -216,6 +247,12 @@ const Doctors = () => {
                     key={doctor.id}
                     className="border-b hover:bg-gray-50 group transition"
                   >
+                    <td className="px-4 py-2">
+                      <Avatar>
+                        <AvatarImage src={(doctor as any).profilePicture} alt={doctor.name} />
+                        <AvatarFallback>{doctor.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    </td>
                     <td className="px-4 py-2 font-medium">{doctor.name}</td>
                     <td className="px-4 py-2">{doctor.specialty}</td>
                     <td className="px-4 py-2">{doctor.contact}</td>
