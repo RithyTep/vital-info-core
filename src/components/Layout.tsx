@@ -1,12 +1,12 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Users, UserCheck, Pill, Calendar, FileText, LayoutDashboard, LogOut, Languages } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar, LayoutDashboard, LogOut, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,21 +45,21 @@ const Layout = ({ children }: LayoutProps) => {
               </div>
             </div>
 
-            {/* Language Switch */}
+            {/* Language Dropdown */}
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Languages className="h-4 w-4 text-gray-600" />
                 <span className="text-sm text-gray-600">Language</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className={cn("text-xs", language === 'en' ? 'font-semibold text-blue-600' : 'text-gray-500')}>EN</span>
-                <Switch
-                  checked={language === 'km'}
-                  onCheckedChange={(checked) => setLanguage(checked ? 'km' : 'en')}
-                  className="data-[state=checked]:bg-blue-600"
-                />
-                <span className={cn("text-xs", language === 'km' ? 'font-semibold text-blue-600' : 'text-gray-500')}>ខ្មែរ</span>
-              </div>
+              <Select value={language} onValueChange={(value) => setLanguage(value as 'en' | 'km')}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="km">ខ្មែរ</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <nav className="flex flex-1 flex-col">
@@ -119,4 +119,3 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
-
