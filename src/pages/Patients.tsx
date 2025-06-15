@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -24,6 +23,16 @@ import {
 import { localStorageService, Patient } from "@/services/localStorageService";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type NewPatientForm = {
   name: string;
@@ -48,6 +57,7 @@ const Patients = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
   const [formData, setFormData] = useState<NewPatientForm>(defaultFormData);
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -142,13 +152,14 @@ const Patients = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = (patientId: string) => {
-    if (!confirm(t('confirmDeletePatient'))) {
-      return;
-    }
+  const handleDelete = (patient: Patient) => {
+    setPatientToDelete(patient);
+  };
 
+  const confirmDelete = () => {
+    if (!patientToDelete) return;
     try {
-      localStorageService.deletePatient(patientId);
+      localStorageService.deletePatient(patientToDelete.id);
       toast({
         title: t('success'),
         description: t('patientDeletedSuccess'),
@@ -161,6 +172,7 @@ const Patients = () => {
         variant: "destructive",
       });
     }
+    setPatientToDelete(null);
   };
 
   if (loading) {
@@ -374,7 +386,7 @@ const Patients = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(patient.id)}
+                      onClick={() => handleDelete(patient)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash className="h-4 w-4" />
@@ -386,6 +398,20 @@ const Patients = () => {
           </Table>
         </div>
       )}
+       <AlertDialog open={!!patientToDelete} onOpenChange={(open) => !open && setPatientToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirmDeletePatient')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t('delete')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

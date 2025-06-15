@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,16 @@ import { localStorageService, Appointment, Patient, Doctor } from "@/services/lo
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type NewAppointmentForm = {
   patientId: string;
@@ -41,9 +50,10 @@ const Appointments = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null);
   const [formData, setFormData] = useState<NewAppointmentForm>(defaultFormData);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     fetchData();
@@ -113,17 +123,20 @@ const Appointments = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = (appointmentId: string) => {
-    if (!confirm(t("confirmDeleteAppointment"))) {
-      return;
-    }
+  const handleDelete = (appointment: Appointment) => {
+    setAppointmentToDelete(appointment);
+  };
+
+  const confirmDelete = () => {
+    if (!appointmentToDelete) return;
     try {
-      localStorageService.deleteAppointment(appointmentId);
+      localStorageService.deleteAppointment(appointmentToDelete.id);
       toast({ title: t("success"), description: t("appointmentDeletedSuccess") });
       fetchData();
     } catch (error) {
       toast({ title: t("error"), description: t("appointmentDeleteFailed"), variant: "destructive" });
     }
+    setAppointmentToDelete(null);
   };
 
   const openAddDialog = () => {
@@ -137,6 +150,87 @@ const Appointments = () => {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">{t("appointments")}</h1>
+          <div className="flex items-center gap-3">
+            <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
+              <SelectTrigger className="w-32">
+                <SelectValue>
+                  {language === 'en' ? 'English' : 'ខ្មែរ'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="km">ខ្មែរ</SelectItem>
+              </SelectContent>
+            </Select>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={openAddDialog} className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t("addAppointment")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle>{editingAppointment ? t("editAppointment") : t("addNewAppointment")}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="patientId">{t("patientName")}</Label>
+                    <Select value={formData.patientId} onValueChange={value => setFormData({ ...formData, patientId: value })} required>
+                      <SelectTrigger id="patientId"><SelectValue placeholder={t("selectPatient")} /></SelectTrigger>
+                      <SelectContent>{patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="doctorId">{t("doctorName")}</Label>
+                    <Select value={formData.doctorId} onValueChange={value => setFormData({ ...formData, doctorId: value })} required>
+                      <SelectTrigger id="doctorId"><SelectValue placeholder={t("selectDoctor")} /></SelectTrigger>
+                      <SelectContent>{doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name} ({d.specialty})</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="space-y-2 flex-1">
+                      <Label htmlFor="date">{t("dateOfBirth")}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button type="button" variant="outline" className={`w-full justify-start text-left font-normal ${!formData.date ? "text-muted-foreground" : ""}`}>
+                            {formData.date ? format(formData.date, "yyyy-MM-dd") : <span>{t("pickDate")}</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={formData.date} onSelect={date => setFormData({ ...formData, date: date || undefined })} initialFocus className="p-3 pointer-events-auto" />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <Label htmlFor="time">{t("time")}</Label>
+                      <Input id="time" type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} required />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reason">{t("reasonForVisit")}</Label>
+                    <Textarea id="reason" value={formData.reason} onChange={e => setFormData({ ...formData, reason: e.target.value })} rows={2} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">{t("status")}</Label>
+                    <Select value={formData.status} onValueChange={value => setFormData({ ...formData, status: value as any })} required>
+                      <SelectTrigger id="status"><SelectValue placeholder={t("selectStatus")} /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Scheduled">{t("scheduled")}</SelectItem>
+                        <SelectItem value="Completed">{t("completed")}</SelectItem>
+                        <SelectItem value="Cancelled">{t("cancelled")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("cancel")}</Button>
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{editingAppointment ? t("updateAppointment") : t("createAppointment")}</Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         <div className="flex items-center justify-center py-20">
           <TableIcon className="animate-spin w-8 h-8 text-blue-400 mr-3" />
@@ -149,75 +243,88 @@ const Appointments = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-blue-800">{t("appointments")}</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openAddDialog} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              {t("addAppointment")}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader>
-              <DialogTitle>{editingAppointment ? t("editAppointment") : t("addNewAppointment")}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="patientId">{t("patientName")}</Label>
-                <Select value={formData.patientId} onValueChange={value => setFormData({ ...formData, patientId: value })} required>
-                  <SelectTrigger id="patientId"><SelectValue placeholder={t("selectPatient")} /></SelectTrigger>
-                  <SelectContent>{patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="doctorId">{t("doctorName")}</Label>
-                <Select value={formData.doctorId} onValueChange={value => setFormData({ ...formData, doctorId: value })} required>
-                  <SelectTrigger id="doctorId"><SelectValue placeholder={t("selectDoctor")} /></SelectTrigger>
-                  <SelectContent>{doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name} ({d.specialty})</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2">
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="date">{t("dateOfBirth")}</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button type="button" variant="outline" className={`w-full justify-start text-left font-normal ${!formData.date ? "text-muted-foreground" : ""}`}>
-                        {formData.date ? format(formData.date, "yyyy-MM-dd") : <span>{t("pickDate")}</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={formData.date} onSelect={date => setFormData({ ...formData, date: date || undefined })} initialFocus className="p-3 pointer-events-auto" />
-                    </PopoverContent>
-                  </Popover>
+        <h1 className="text-3xl font-bold text-gray-900">{t("appointments")}</h1>
+        <div className="flex items-center gap-3">
+          <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
+            <SelectTrigger className="w-32">
+              <SelectValue>
+                {language === 'en' ? 'English' : 'ខ្មែរ'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="km">ខ្មែរ</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openAddDialog} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                {t("addAppointment")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <DialogTitle>{editingAppointment ? t("editAppointment") : t("addNewAppointment")}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="patientId">{t("patientName")}</Label>
+                  <Select value={formData.patientId} onValueChange={value => setFormData({ ...formData, patientId: value })} required>
+                    <SelectTrigger id="patientId"><SelectValue placeholder={t("selectPatient")} /></SelectTrigger>
+                    <SelectContent>{patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="time">{t("time")}</Label>
-                  <Input id="time" type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} required />
+                <div className="space-y-2">
+                  <Label htmlFor="doctorId">{t("doctorName")}</Label>
+                  <Select value={formData.doctorId} onValueChange={value => setFormData({ ...formData, doctorId: value })} required>
+                    <SelectTrigger id="doctorId"><SelectValue placeholder={t("selectDoctor")} /></SelectTrigger>
+                    <SelectContent>{doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name} ({d.specialty})</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reason">{t("reasonForVisit")}</Label>
-                <Textarea id="reason" value={formData.reason} onChange={e => setFormData({ ...formData, reason: e.target.value })} rows={2} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">{t("status")}</Label>
-                <Select value={formData.status} onValueChange={value => setFormData({ ...formData, status: value as any })} required>
-                  <SelectTrigger id="status"><SelectValue placeholder={t("selectStatus")} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Scheduled">{t("scheduled")}</SelectItem>
-                    <SelectItem value="Completed">{t("completed")}</SelectItem>
-                    <SelectItem value="Cancelled">{t("cancelled")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("cancel")}</Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{editingAppointment ? t("updateAppointment") : t("createAppointment")}</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="flex gap-2">
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="date">{t("dateOfBirth")}</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button type="button" variant="outline" className={`w-full justify-start text-left font-normal ${!formData.date ? "text-muted-foreground" : ""}`}>
+                          {formData.date ? format(formData.date, "yyyy-MM-dd") : <span>{t("pickDate")}</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={formData.date} onSelect={date => setFormData({ ...formData, date: date || undefined })} initialFocus className="p-3 pointer-events-auto" />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="time">{t("time")}</Label>
+                    <Input id="time" type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reason">{t("reasonForVisit")}</Label>
+                  <Textarea id="reason" value={formData.reason} onChange={e => setFormData({ ...formData, reason: e.target.value })} rows={2} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">{t("status")}</Label>
+                  <Select value={formData.status} onValueChange={value => setFormData({ ...formData, status: value as any })} required>
+                    <SelectTrigger id="status"><SelectValue placeholder={t("selectStatus")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Scheduled">{t("scheduled")}</SelectItem>
+                      <SelectItem value="Completed">{t("completed")}</SelectItem>
+                      <SelectItem value="Cancelled">{t("cancelled")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("cancel")}</Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{editingAppointment ? t("updateAppointment") : t("createAppointment")}</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {appointments.length === 0 ? (
@@ -257,7 +364,7 @@ const Appointments = () => {
                   <TableCell>{appointment.status}</TableCell>
                   <TableCell className="flex justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(appointment)}><Edit className="h-4 w-4" /></Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(appointment.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50"><Trash className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(appointment)} className="text-red-600 hover:text-red-700 hover:bg-red-50"><Trash className="h-4 w-4" /></Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -265,6 +372,20 @@ const Appointments = () => {
           </Table>
         </div>
       )}
+      <AlertDialog open={!!appointmentToDelete} onOpenChange={(open) => !open && setAppointmentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirmDeleteAppointment")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t("delete")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

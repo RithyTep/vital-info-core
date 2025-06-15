@@ -9,12 +9,23 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { localStorageService, Medication } from '@/services/localStorageService';
 import { printData } from '@/utils/printUtils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Medications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [medicationToDelete, setMedicationToDelete] = useState<Medication | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     name: '',
@@ -101,13 +112,14 @@ const Medications = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = (medicationId: string) => {
-    if (!confirm(t('confirmDeleteMedication'))) {
-      return;
-    }
+  const handleDelete = (medication: Medication) => {
+    setMedicationToDelete(medication);
+  };
 
+  const confirmDelete = () => {
+    if (!medicationToDelete) return;
     try {
-      localStorageService.deleteMedication(medicationId);
+      localStorageService.deleteMedication(medicationToDelete.id);
       toast({
         title: t('success'),
         description: t('medicationDeletedSuccess'),
@@ -120,6 +132,7 @@ const Medications = () => {
         variant: 'destructive'
       });
     }
+    setMedicationToDelete(null);
   };
 
   const handlePrint = () => {
@@ -153,7 +166,7 @@ const Medications = () => {
     return (
       <div className="p-8 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-gray-900">
             {t('medications')}
           </h1>
         </div>
@@ -177,7 +190,7 @@ const Medications = () => {
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-gray-900">
           {t('medications')}
         </h1>
         <div className="flex space-x-2">
@@ -187,7 +200,7 @@ const Medications = () => {
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openAddDialog} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg">
+              <Button onClick={openAddDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('addMedication')}
               </Button>
@@ -294,7 +307,7 @@ const Medications = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(medication.id)}
+                        onClick={() => handleDelete(medication)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
                       >
                         <Trash className="h-4 w-4" />
@@ -319,6 +332,20 @@ const Medications = () => {
           })}
         </div>
       )}
+      <AlertDialog open={!!medicationToDelete} onOpenChange={(open) => !open && setMedicationToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirmDeleteMedication')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t('delete')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

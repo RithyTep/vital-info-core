@@ -112,7 +112,7 @@ const Doctors = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">{t("doctors")}</h1>
         <div className="flex items-center gap-3">
           <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
@@ -128,7 +128,7 @@ const Doctors = () => {
           </Select>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openAddDialog} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={openAddDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('addDoctor')}
               </Button>
@@ -250,14 +250,14 @@ const Doctors = () => {
       <AlertDialog open={!!doctorToDelete} onOpenChange={(open) => !open && setDoctorToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('areYouSure') || 'Are you absolutely sure?'}</AlertDialogTitle>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               {t('confirmDeleteDoctor')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel') || 'Cancel'}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>{t('delete') || 'Delete'}</AlertDialogAction>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t('delete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
