@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import MiniCalendar from './MiniCalendar';
 
 const LoginForm = () => {
+  const [adminName, setAdminName] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -17,6 +19,7 @@ const LoginForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Optionally: Save adminName to storage if needed for later
     if (login(password)) {
       toast({
         title: 'Success',
@@ -32,16 +35,36 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div
+        className="absolute inset-0 -z-10 animate-fade-in bg-gradient-to-br from-blue-100 via-indigo-200 to-blue-400 transition-all duration-700"
+        style={{ backgroundSize: '200% 200%', animation: 'bgMove 10s ease-in-out infinite' }}
+      />
+      <style>
+        {`
+          @keyframes bgMove {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+        `}
+      </style>
       {/* MiniCalendar shown above the login card */}
       <div className="mb-6">
         <MiniCalendar />
       </div>
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-md shadow-2xl animate-fade-in">
         <CardHeader className="space-y-4 text-center">
           <div className="flex items-center justify-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">H</div>
-            <h1 className="text-2xl font-bold text-blue-600">HMS</h1>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold animate-bounce">H</div>
+            <h1 className="text-2xl font-bold text-blue-600 animate-fade-in">{t('hms', {defaultValue: 'HMS'})}</h1>
           </div>
           <CardTitle className="text-xl">{t('loginRequired')}</CardTitle>
           <div className="flex items-center justify-center space-x-2">
@@ -55,6 +78,20 @@ const LoginForm = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* New Name Field */}
+            <div className="space-y-2">
+              <Label htmlFor="adminName">{t('adminName', {defaultValue: "Admin Name"})}</Label>
+              <Input
+                id="adminName"
+                type="text"
+                value={adminName}
+                onChange={(e) => setAdminName(e.target.value)}
+                placeholder={t('adminName', {defaultValue: "Admin Name"})}
+                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                autoComplete="username"
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t('password')}</Label>
               <Input
@@ -65,6 +102,7 @@ const LoginForm = () => {
                 placeholder={t('password')}
                 required
                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                autoComplete="current-password"
               />
             </div>
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
