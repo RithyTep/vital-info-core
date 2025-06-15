@@ -1,7 +1,16 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, UserCheck, Pill, Calendar } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar, BarChart as BarChartIcon } from 'lucide-react';
 import { localStorageService } from '@/services/localStorageService';
+import { useNavigate } from 'react-router-dom';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 
 interface Stats {
   patients: number;
@@ -17,6 +26,7 @@ const Dashboard = () => {
     medications: 0,
     appointments: 0
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const patients = localStorageService.getPatients();
@@ -63,6 +73,35 @@ const Dashboard = () => {
     }
   ];
 
+  const chartConfig = {
+    total: {
+      label: 'Total',
+    },
+    patients: {
+      label: 'Patients',
+      color: 'hsl(var(--chart-1))',
+    },
+    doctors: {
+      label: 'Doctors',
+      color: 'hsl(var(--chart-2))',
+    },
+    medications: {
+      label: 'Medications',
+      color: 'hsl(var(--chart-3))',
+    },
+    appointments: {
+        label: 'Appointments',
+        color: 'hsl(var(--chart-4))',
+    }
+  } satisfies ChartConfig;
+
+  const chartData = [
+    { name: 'Patients', total: stats.patients, fill: 'var(--color-patients)' },
+    { name: 'Doctors', total: stats.doctors, fill: 'var(--color-doctors)' },
+    { name: 'Medications', total: stats.medications, fill: 'var(--color-medications)' },
+    { name: 'Appointments', total: stats.appointments, fill: 'var(--color-appointments)' },
+  ];
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -95,12 +134,18 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-left transition-colors">
+              <button
+                onClick={() => navigate('/patients?action=add')}
+                className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-left transition-colors"
+              >
                 <Users className="h-6 w-6 text-blue-600 mb-2" />
                 <h3 className="font-medium">Add Patient</h3>
                 <p className="text-sm text-gray-600">Register new patient</p>
               </button>
-              <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition-colors">
+              <button
+                onClick={() => navigate('/doctors')}
+                className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition-colors"
+              >
                 <UserCheck className="h-6 w-6 text-green-600 mb-2" />
                 <h3 className="font-medium">Add Doctor</h3>
                 <p className="text-sm text-gray-600">Register new doctor</p>
@@ -127,6 +172,43 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center gap-2">
+          <BarChartIcon className="h-6 w-6" />
+          <CardTitle>System Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+            <BarChart data={chartData} accessibilityLayer>
+              <XAxis
+                dataKey="name"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                stroke="#888888"
+                fontSize={12}
+              />
+              <YAxis
+                stroke="#888888"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `${value}`}
+              />
+              <Tooltip
+                cursor={{ fill: 'hsl(var(--muted))', radius: 4 }}
+                content={<ChartTooltipContent indicator="dot" />}
+              />
+              <Bar dataKey="total" radius={4}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 };

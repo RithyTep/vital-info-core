@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,11 +49,25 @@ const Patients = () => {
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [formData, setFormData] = useState<NewPatientForm>(defaultFormData);
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     fetchPatients();
-    // eslint-disable-next-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const openAddDialog = useCallback(() => {
+    setEditingPatient(null);
+    setFormData(defaultFormData);
+    setDialogOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      openAddDialog();
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, openAddDialog]);
 
   const fetchPatients = () => {
     try {
