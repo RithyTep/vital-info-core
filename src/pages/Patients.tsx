@@ -280,7 +280,7 @@ const Patients = () => {
                           mode="single"
                           selected={formData.dob}
                           onSelect={date => setFormData({ ...formData, dob: date || undefined })}
-                          captionLayout="dropdown-nav"
+                          captionLayout="dropdown"
                           fromYear={1920}
                           toYear={new Date().getFullYear()}
                           initialFocus
