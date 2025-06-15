@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MiniCalendar from './MiniCalendar';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -61,6 +62,9 @@ const Layout = ({ children }: LayoutProps) => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Mini Calendar */}
+            <MiniCalendar />
 
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
