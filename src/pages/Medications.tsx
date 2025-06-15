@@ -5,36 +5,33 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash } from 'lucide-react';
+import { Plus, Edit, Trash, Search, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Medication {
-  _id?: string;
-  name: string;
-  dosage: string;
-  stockQuantity: number;
-}
+import { useLanguage } from '@/contexts/LanguageContext';
+import { localStorageService, Medication } from '@/services/localStorageService';
+import { printData } from '@/utils/printUtils';
 
 const Medications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
-  const [formData, setFormData] = useState<Medication>({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [formData, setFormData] = useState({
     name: '',
     dosage: '',
     stockQuantity: 0
   });
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchMedications();
   }, []);
 
-  const fetchMedications = async () => {
+  const fetchMedications = () => {
     try {
-      const response = await fetch('https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/medications');
-      const data = await response.json();
+      const data = localStorageService.getMedications();
       setMedications(data);
     } catch (error) {
       toast({
@@ -47,46 +44,30 @@ const Medications = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       if (editingMedication) {
-        const response = await fetch(`https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/medications/${editingMedication._id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (response.ok) {
+        const updated = localStorageService.updateMedication(editingMedication.id, formData);
+        if (updated) {
           toast({
             title: 'Success',
             description: 'Medication updated successfully',
           });
         }
       } else {
-        const response = await fetch('https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/medications', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
+        localStorageService.createMedication(formData);
+        toast({
+          title: 'Success',
+          description: 'Medication added successfully',
         });
-
-        if (response.ok) {
-          toast({
-            title: 'Success',
-            description: 'Medication added successfully',
-          });
-        }
       }
 
       setDialogOpen(false);
       setEditingMedication(null);
       setFormData({ name: '', dosage: '', stockQuantity: 0 });
-      await fetchMedications();
+      fetchMedications();
     } catch (error) {
       toast({
         title: 'Error',
@@ -98,26 +79,27 @@ const Medications = () => {
 
   const handleEdit = (medication: Medication) => {
     setEditingMedication(medication);
-    setFormData(medication);
+    setFormData({
+      name: medication.name,
+      dosage: medication.dosage,
+      stockQuantity: medication.stockQuantity
+    });
     setDialogOpen(true);
   };
 
-  const handleDelete = async (medicationId: string) => {
+  const handleDelete = (medicationId: string) => {
     if (!confirm('Are you sure you want to delete this medication?')) {
       return;
     }
 
     try {
-      const response = await fetch(`https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/medications/${medicationId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
+      const success = localStorageService.deleteMedication(medicationId);
+      if (success) {
         toast({
           title: 'Success',
           description: 'Medication deleted successfully',
         });
-        await fetchMedications();
+        fetchMedications();
       }
     } catch (error) {
       toast({
@@ -128,6 +110,16 @@ const Medications = () => {
     }
   };
 
+  const handlePrint = () => {
+    const printableData = filteredMedications.map(med => ({
+      name: med.name,
+      dosage: med.dosage,
+      stockQuantity: med.stockQuantity,
+      status: getStockStatus(med.stockQuantity).text
+    }));
+    printData(printableData, t('medications'), ['name', 'dosage', 'stockQuantity', 'status']);
+  };
+
   const openAddDialog = () => {
     setEditingMedication(null);
     setFormData({ name: '', dosage: '', stockQuantity: 0 });
@@ -135,16 +127,23 @@ const Medications = () => {
   };
 
   const getStockStatus = (quantity: number) => {
-    if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-600 bg-red-100' };
-    if (quantity < 10) return { text: 'Low Stock', color: 'text-orange-600 bg-orange-100' };
-    return { text: 'In Stock', color: 'text-green-600 bg-green-100' };
+    if (quantity === 0) return { text: t('outOfStock'), color: 'text-red-600 bg-red-100' };
+    if (quantity < 10) return { text: t('lowStock'), color: 'text-orange-600 bg-orange-100' };
+    return { text: t('inStock'), color: 'text-green-600 bg-green-100' };
   };
+
+  const filteredMedications = medications.filter(medication =>
+    medication.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    medication.dosage.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-8 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Medications</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            {t('medications')}
+          </h1>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
@@ -164,96 +163,116 @@ const Medications = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Medications</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openAddDialog} className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Medication
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingMedication ? 'Edit Medication' : 'Add New Medication'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dosage">Dosage</Label>
-                <Input
-                  id="dosage"
-                  value={formData.dosage}
-                  onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
-                  placeholder="e.g., 500mg"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stockQuantity">Stock Quantity</Label>
-                <Input
-                  id="stockQuantity"
-                  type="number"
-                  value={formData.stockQuantity}
-                  onChange={(e) => setFormData({ ...formData, stockQuantity: parseInt(e.target.value) })}
-                  required
-                  min="0"
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                {editingMedication ? 'Update Medication' : 'Add Medication'}
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          {t('medications')}
+        </h1>
+        <div className="flex space-x-2">
+          <Button onClick={handlePrint} variant="outline" className="hover:bg-green-50">
+            <Printer className="h-4 w-4 mr-2" />
+            {t('print')}
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openAddDialog} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('addMedication')}
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingMedication ? t('edit') + ' ' + t('medications') : t('addMedication')}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t('medicationName')}</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dosage">{t('dosage')}</Label>
+                  <Input
+                    id="dosage"
+                    value={formData.dosage}
+                    onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
+                    placeholder="e.g., 500mg"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="stockQuantity">{t('stockQuantity')}</Label>
+                  <Input
+                    id="stockQuantity"
+                    type="number"
+                    value={formData.stockQuantity}
+                    onChange={(e) => setFormData({ ...formData, stockQuantity: parseInt(e.target.value) })}
+                    required
+                    min="0"
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                  {editingMedication ? t('save') : t('addMedication')}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {medications.length === 0 ? (
-        <Card>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder={t('search') + ' ' + t('medications').toLowerCase() + '...'}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 bg-white/70 backdrop-blur-sm"
+        />
+      </div>
+
+      {filteredMedications.length === 0 ? (
+        <Card className="bg-white/70 backdrop-blur-sm">
           <CardContent className="flex items-center justify-center py-12">
             <div className="text-center">
               <h3 className="text-lg font-medium text-gray-900 mb-2">No medications found</h3>
               <p className="text-gray-600 mb-4">Get started by adding your first medication.</p>
-              <Button onClick={openAddDialog} className="bg-purple-600 hover:bg-purple-700">
+              <Button onClick={openAddDialog} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Medication
+                {t('addMedication')}
               </Button>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {medications.map((medication) => {
+          {filteredMedications.map((medication) => {
             const stockStatus = getStockStatus(medication.stockQuantity);
             return (
-              <Card key={medication._id} className="hover:shadow-lg transition-shadow duration-200">
+              <Card key={medication.id} className="hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white/80 backdrop-blur-sm border border-gray-200">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{medication.name}</span>
-                    <div className="flex space-x-2">
+                    <span className="text-lg font-bold text-gray-800">{medication.name}</span>
+                    <div className="flex space-x-1">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(medication)}
+                        className="hover:bg-blue-50 hover:border-blue-300"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(medication._id!)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDelete(medication.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -262,12 +281,12 @@ const Medications = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-gray-600">
-                    <strong>Dosage:</strong> {medication.dosage}
+                    <strong>{t('dosage')}:</strong> {medication.dosage}
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong>Stock:</strong> {medication.stockQuantity} units
+                    <strong>{t('stockQuantity')}:</strong> {medication.stockQuantity} units
                   </p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stockStatus.color}`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${stockStatus.color}`}>
                     {stockStatus.text}
                   </span>
                 </CardContent>
