@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,9 +78,13 @@ const Medications = () => {
       setFormData({ name: '', dosage: '', stockQuantity: 0, imageUrl: '' });
       fetchMedications();
     } catch (error) {
+      let description = t('medicationSaveFailed');
+      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'QUOTA_EXCEEDED_ERR')) {
+        description = "Image is too large to be saved. Please use a smaller file.";
+      }
       toast({
         title: t('error'),
-        description: t('medicationSaveFailed'),
+        description: description,
         variant: 'destructive'
       });
     }
