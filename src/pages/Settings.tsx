@@ -109,27 +109,27 @@ const Settings: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">{t("settings")}</h1>
-      {/* Language Dropdown at the top right of TabsList */}
-      <div className="flex justify-between items-center mb-2">
-        <TabsList>
-          <TabsTrigger value="profile">{t("profile")}</TabsTrigger>
-          <TabsTrigger value="token">{t("token")}</TabsTrigger>
-          <TabsTrigger value="backup">{t("backup")}</TabsTrigger>
-        </TabsList>
-        <div className="flex items-center">
-          <span className="text-sm text-gray-600 mr-2">{t("language")}</span>
-          <Select value={language} onValueChange={v => setLanguage(v as 'en' | 'km')}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder={t("language")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="km">ខ្មែរ</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
       <Tabs defaultValue="profile" className="w-full">
+        {/* Tabs Header: Triggers and Language Select in a flex row */}
+        <div className="flex justify-between items-center mb-2">
+          <TabsList>
+            <TabsTrigger value="profile">{t("profile")}</TabsTrigger>
+            <TabsTrigger value="token">{t("token")}</TabsTrigger>
+            <TabsTrigger value="backup">{t("backup")}</TabsTrigger>
+          </TabsList>
+          <div className="flex items-center">
+            <span className="text-sm text-gray-600 mr-2">{t("language")}</span>
+            <Select value={language} onValueChange={v => setLanguage(v as 'en' | 'km')}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder={t("language")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="km">ខ្មែរ</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         {/* Profile Tab */}
         <TabsContent value="profile">
           <form className="space-y-4 mt-4" onSubmit={handleProfileSave}>
@@ -224,3 +224,4 @@ const Settings: React.FC = () => {
 };
 
 export default Settings;
+
