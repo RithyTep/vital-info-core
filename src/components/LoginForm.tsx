@@ -58,7 +58,7 @@ const LoginForm = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password (5569)"
+                placeholder={t('password')}
                 required
                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               />

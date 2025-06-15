@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { localStorageService, Patient } from "@/services/localStorageService";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type NewPatientForm = {
   name: string;
@@ -49,6 +50,7 @@ const Patients = () => {
   const [formData, setFormData] = useState<NewPatientForm>(defaultFormData);
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t, language, setLanguage } = useLanguage();
 
   useEffect(() => {
     fetchPatients();
@@ -74,8 +76,8 @@ const Patients = () => {
       setPatients(data);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch patients",
+        title: t('error'),
+        description: t('fetchPatientsFailed'),
         variant: "destructive",
       });
     } finally {
@@ -100,16 +102,16 @@ const Patients = () => {
       if (editingPatient) {
         localStorageService.updatePatient(editingPatient.id, patientInfo);
         toast({
-          title: "Success",
-          description: "Patient updated successfully",
+          title: t('success'),
+          description: t('patientUpdatedSuccess'),
         });
       } else {
         localStorageService.createPatient({
           ...patientInfo,
         });
         toast({
-          title: "Success",
-          description: "Patient added successfully",
+          title: t('success'),
+          description: t('patientAddedSuccess'),
         });
       }
 
@@ -119,8 +121,8 @@ const Patients = () => {
       fetchPatients();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save patient",
+        title: t('error'),
+        description: t('patientSaveFailed'),
         variant: "destructive",
       });
     }
@@ -140,21 +142,21 @@ const Patients = () => {
   };
 
   const handleDelete = (patientId: string) => {
-    if (!confirm("Are you sure you want to delete this patient?")) {
+    if (!confirm(t('confirmDeletePatient'))) {
       return;
     }
 
     try {
       localStorageService.deletePatient(patientId);
       toast({
-        title: "Success",
-        description: "Patient deleted successfully",
+        title: t('success'),
+        description: t('patientDeletedSuccess'),
       });
       fetchPatients();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete patient",
+        title: t('error'),
+        description: t('patientDeleteFailed'),
         variant: "destructive",
       });
     }
@@ -164,11 +166,11 @@ const Patients = () => {
     return (
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('patients')}</h1>
         </div>
         <div className="flex items-center justify-center py-20">
           <TableIcon className="animate-spin w-8 h-8 text-blue-400 mr-3" />
-          <span className="text-lg text-gray-500">Loading...</span>
+          <span className="text-lg text-gray-500">{t('loading')}</span>
         </div>
       </div>
     );
@@ -177,161 +179,174 @@ const Patients = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-blue-800">Patients</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={openAddDialog}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Patient
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingPatient ? "Edit Patient" : "Add New Patient"}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <p className="text-gray-500 text-sm">Enter the patient's information to create a new record.</p>
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="email">Email</Label>
+        <h1 className="text-3xl font-bold text-blue-800">{t('patients')}</h1>
+        <div className="flex items-center gap-3">
+          <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
+            <SelectTrigger className="w-32">
+              <SelectValue>
+                {language === 'en' ? 'English' : 'ខ្មែរ'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="km">ខ្មែរ</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={openAddDialog}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t('addPatient')}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingPatient ? t('editPatient') : t('addNewPatient')}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <p className="text-gray-500 text-sm">{t('patientInfoPrompt')}</p>
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t('fullName')}</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
+                    id="name"
+                    value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
+                      setFormData({ ...formData, name: e.target.value })
                     }
+                    required
                   />
                 </div>
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
+                <div className="flex gap-2">
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="email">{t('email')}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="phone">{t('phoneNumber')}</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="gender">{t('gender')}</Label>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={value => setFormData({ ...formData, gender: value })}
+                    >
+                      <SelectTrigger id="gender">
+                        <SelectValue placeholder={t('selectGender')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">{t('male')}</SelectItem>
+                        <SelectItem value="Female">{t('female')}</SelectItem>
+                        <SelectItem value="Other">{t('other')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="dob">{t('dateOfBirth')}</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={`w-full justify-start text-left font-normal ${!formData.dob ? "text-muted-foreground" : ""}`}
+                        >
+                          {formData.dob ? format(formData.dob, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.dob}
+                          onSelect={date => setFormData({ ...formData, dob: date || undefined })}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">{t('address')}</Label>
+                  <Textarea
+                    id="address"
+                    value={formData.address}
                     onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
+                      setFormData({ ...formData, address: e.target.value })
                     }
+                    rows={2}
                   />
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={value => setFormData({ ...formData, gender: value })}
-                  >
-                    <SelectTrigger id="gender">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => {
+                    setDialogOpen(false);
+                    setEditingPatient(null);
+                    setFormData(defaultFormData);
+                  }}>
+                    {t('cancel')}
+                  </Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    {editingPatient ? t('updatePatient') : t('createPatient')}
+                  </Button>
                 </div>
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="dob">Date of Birth</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={`w-full justify-start text-left font-normal ${!formData.dob ? "text-muted-foreground" : ""}`}
-                      >
-                        {formData.dob ? format(formData.dob, "yyyy-MM-dd") : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.dob}
-                        onSelect={date => setFormData({ ...formData, dob: date || undefined })}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  rows={2}
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => {
-                  setDialogOpen(false);
-                  setEditingPatient(null);
-                  setFormData(defaultFormData);
-                }}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                  {editingPatient ? "Update Patient" : "Create Patient"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {patients.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center justify-center py-12">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No patients found
+              {t('noPatientsFound')}
             </h3>
             <p className="text-gray-600 mb-4">
-              Get started by adding your first patient.
+              {t('getStartedPatient')}
             </p>
             <Button
               onClick={openAddDialog}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Patient
+              {t('addPatient')}
             </Button>
           </div>
         </Card>
       ) : (
         <div className="bg-white/90 rounded-lg shadow border p-4">
           <Table>
-            <TableCaption>All Registered Patients</TableCaption>
+            <TableCaption>{t('allRegisteredPatients')}</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Gender</TableHead>
-                <TableHead>DOB</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('name')}</TableHead>
+                <TableHead>{t('email')}</TableHead>
+                <TableHead>{t('phoneNumber')}</TableHead>
+                <TableHead>{t('gender')}</TableHead>
+                <TableHead>{t('dateOfBirth')}</TableHead>
+                <TableHead>{t('address')}</TableHead>
+                <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
