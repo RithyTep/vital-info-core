@@ -1,16 +1,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, UserCheck, Pill, Calendar, BarChart as BarChartIcon } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar, BarChart as BarChartIcon, UserPlus, CheckCircle2 } from 'lucide-react';
 import { localStorageService } from '@/services/localStorageService';
 import { useNavigate } from 'react-router-dom';
-import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
+import { Button } from '@/components/ui/button';
 
 interface Stats {
   patients: number;
@@ -61,15 +62,15 @@ const Dashboard = () => {
       title: 'Medications',
       value: stats.medications,
       icon: Pill,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-100'
     },
     {
       title: 'Appointments',
       value: stats.appointments,
       icon: Calendar,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100'
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-100'
     }
   ];
 
@@ -103,25 +104,25 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome to Hospital Management System</p>
+        <p className="text-gray-600">Welcome to your modern Hospital Management System</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
+          <Card key={index} className="transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-500">
                 {stat.title}
               </CardTitle>
-              <div className={`p-2 rounded-full ${stat.bgColor}`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <div className={`p-3 rounded-full ${stat.bgColor}`}>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+              <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -132,25 +133,16 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => navigate('/patients?action=add')}
-                className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-left transition-colors"
-              >
-                <Users className="h-6 w-6 text-blue-600 mb-2" />
-                <h3 className="font-medium">Add Patient</h3>
-                <p className="text-sm text-gray-600">Register new patient</p>
-              </button>
-              <button
-                onClick={() => navigate('/doctors')}
-                className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-left transition-colors"
-              >
-                <UserCheck className="h-6 w-6 text-green-600 mb-2" />
-                <h3 className="font-medium">Add Doctor</h3>
-                <p className="text-sm text-gray-600">Register new doctor</p>
-              </button>
-            </div>
+          <CardContent className="flex flex-col space-y-3">
+            <Button variant="outline" onClick={() => navigate('/patients?action=add')}>
+              <UserPlus className="mr-2 h-4 w-4" /> Add New Patient
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/doctors?action=add')}>
+              <UserCheck className="mr-2 h-4 w-4" /> Add New Doctor
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/appointments?action=add')}>
+              <Calendar className="mr-2 h-4 w-4" /> Schedule Appointment
+            </Button>
           </CardContent>
         </Card>
 
@@ -161,12 +153,16 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
                 <p className="text-sm text-gray-600">System initialized successfully</p>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
                 <p className="text-sm text-gray-600">HMS Dashboard loaded</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Users className="h-4 w-4 text-blue-500" />
+                <p className="text-sm text-gray-600">New patient "John Doe" registered.</p>
               </div>
             </div>
           </CardContent>
@@ -181,6 +177,7 @@ const Dashboard = () => {
         <CardContent>
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
             <BarChart data={chartData} accessibilityLayer>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
                 tickLine={false}
@@ -195,6 +192,7 @@ const Dashboard = () => {
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
+                allowDecimals={false}
               />
               <Tooltip
                 cursor={{ fill: 'hsl(var(--muted))', radius: 4 }}
