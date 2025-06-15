@@ -1,13 +1,13 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, UserCheck, Pill, FileText } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar } from 'lucide-react';
+import { localStorageService } from '@/services/localStorageService';
 
 interface Stats {
   patients: number;
   doctors: number;
   medications: number;
-  prescriptions: number;
+  appointments: number;
 }
 
 const Dashboard = () => {
@@ -15,40 +15,22 @@ const Dashboard = () => {
     patients: 0,
     doctors: 0,
     medications: 0,
-    prescriptions: 0
+    appointments: 0
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    const patients = localStorageService.getPatients();
+    const doctors = localStorageService.getDoctors();
+    const medications = localStorageService.getMedications();
+    const appointments = localStorageService.getAppointments();
+
+    setStats({
+      patients: patients.length,
+      doctors: doctors.length,
+      medications: medications.length,
+      appointments: appointments.length
+    });
   }, []);
-
-  const fetchStats = async () => {
-    try {
-      const [patientsRes, doctorsRes, medicationsRes, prescriptionsRes] = await Promise.all([
-        fetch('https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/patients'),
-        fetch('https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/doctors'),
-        fetch('https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/medications'),
-        fetch('https://crudcrud.com/api/e8c5f4a0b8c44e5a9b1e2c3d4e5f6789/prescriptions')
-      ]);
-
-      const patients = await patientsRes.json();
-      const doctors = await doctorsRes.json();
-      const medications = await medicationsRes.json();
-      const prescriptions = await prescriptionsRes.json();
-
-      setStats({
-        patients: patients.length,
-        doctors: doctors.length,
-        medications: medications.length,
-        prescriptions: prescriptions.length
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const statCards = [
     {
@@ -73,34 +55,13 @@ const Dashboard = () => {
       bgColor: 'bg-purple-100'
     },
     {
-      title: 'Prescriptions',
-      value: stats.prescriptions,
-      icon: FileText,
+      title: 'Appointments',
+      value: stats.appointments,
+      icon: Calendar,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100'
     }
   ];
-
-  if (loading) {
-    return (
-      <div className="p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium bg-gray-200 h-4 w-20 rounded"></CardTitle>
-                <div className="h-4 w-4 bg-gray-200 rounded"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-gray-200 h-8 w-16 rounded mb-2"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">

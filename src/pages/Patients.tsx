@@ -275,10 +275,6 @@ const Patients = () => {
                   rows={2}
                 />
               </div>
-              {/* Appointments Section - Stub for now */}
-              <Card className="bg-slate-50 border-dashed border-2 text-center text-gray-400 p-4 text-sm">
-                Appointments (coming soon)
-              </Card>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => {
                   setDialogOpen(false);
