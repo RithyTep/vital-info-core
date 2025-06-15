@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Plus, Edit, Trash, Table as TableIcon } from "lucide-react";
+import { CalendarIcon, Plus, Edit, Trash, Table as TableIcon, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -179,7 +180,7 @@ const Patients = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-blue-800">{t('patients')}</h1>
+        <h1 className="text-3xl font-bold text-primary">{t('patients')}</h1>
         <div className="flex items-center gap-3">
           <Select value={language} onValueChange={val => setLanguage(val as 'en' | 'km')}>
             <SelectTrigger className="w-32">
@@ -196,7 +197,6 @@ const Patients = () => {
             <DialogTrigger asChild>
               <Button
                 onClick={openAddDialog}
-                className="bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t('addPatient')}
@@ -309,7 +309,7 @@ const Patients = () => {
                   }}>
                     {t('cancel')}
                   </Button>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="submit">
                     {editingPatient ? t('updatePatient') : t('createPatient')}
                   </Button>
                 </div>
@@ -320,17 +320,19 @@ const Patients = () => {
       </div>
 
       {patients.length === 0 ? (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <Card className="mt-6 border-dashed">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-4 rounded-full bg-primary/10 p-4">
+              <Users className="h-12 w-12 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
               {t('noPatientsFound')}
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-500 mb-6 max-w-sm">
               {t('getStartedPatient')}
             </p>
             <Button
               onClick={openAddDialog}
-              className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4 mr-2" />
               {t('addPatient')}
@@ -354,7 +356,7 @@ const Patients = () => {
             </TableHeader>
             <TableBody>
               {patients.map((patient) => (
-                <TableRow key={patient.id}>
+                <TableRow key={patient.id} className="hover:bg-accent transition-colors">
                   <TableCell>{patient.name}</TableCell>
                   <TableCell>{(patient as any).email}</TableCell>
                   <TableCell>{patient.contact}</TableCell>
