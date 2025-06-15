@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextType {
@@ -133,7 +132,11 @@ const translations = {
     login: 'Login',
     password: 'Password',
     loginRequired: 'Login Required',
-    invalidPassword: 'Invalid Password'
+    invalidPassword: 'Invalid Password',
+    appShortName: 'HMS',
+    hospitalManagementSubtitle: 'Hospital Management',
+    language: 'Language',
+    logout: 'Logout'
   },
   km: {
     // Navigation
@@ -260,7 +263,11 @@ const translations = {
     login: 'ចូលប្រើប្រាស់',
     password: 'ពាក្យសម្ងាត់',
     loginRequired: 'ត្រូវការចូលប្រើប្រាស់',
-    invalidPassword: 'ពាក្យសម្ងាត់មិនត្រឹមត្រូវ'
+    invalidPassword: 'ពាក្យសម្ងាត់មិនត្រឹមត្រូវ',
+    appShortName: 'HMS',
+    hospitalManagementSubtitle: 'ប្រព័ន្ធគ្រប់គ្រងពេទ្យ',
+    language: 'ភាសា',
+    logout: 'ចាកចេញ'
   }
 };
 

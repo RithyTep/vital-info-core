@@ -23,9 +23,7 @@ const Layout = ({ children }: LayoutProps) => {
     { name: t('patients'), href: '/patients', icon: Users },
     { name: t('doctors'), href: '/doctors', icon: UserCheck },
     { name: t('medications'), href: '/medications', icon: Pill },
-    // Add Appointments tab and remove the Prescriptions tab
-    { name: t('appointments') || 'Appointments', href: '/appointments', icon: Calendar },
-    // Removed: { name: t('prescriptions'), href: '/prescriptions', icon: FileText },
+    { name: t('appointments'), href: '/appointments', icon: Calendar },
   ];
 
   return (
@@ -40,8 +38,8 @@ const Layout = ({ children }: LayoutProps) => {
                   H
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-blue-600">HMS</h1>
-                  <span className="text-xs text-gray-500">Hospital Management</span>
+                  <h1 className="text-xl font-bold text-blue-600">{t('appShortName')}</h1>
+                  <span className="text-xs text-gray-500">{t('hospitalManagementSubtitle')}</span>
                 </div>
               </div>
             </div>
@@ -50,11 +48,11 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Languages className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-600">Language</span>
+                <span className="text-sm text-gray-600">{t('language')}</span>
               </div>
               <Select value={language} onValueChange={(value) => setLanguage(value as 'en' | 'km')}>
                 <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Language" />
+                  <SelectValue placeholder={t('language')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
@@ -91,7 +89,7 @@ const Layout = ({ children }: LayoutProps) => {
                     ))}
                   </ul>
                 </li>
-                {/* Move MiniCalendar here, above Logout */}
+                {/* MiniCalendar above Logout */}
                 <li className="pt-4">
                   <MiniCalendar />
                 </li>
@@ -102,7 +100,7 @@ const Layout = ({ children }: LayoutProps) => {
                     className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    {t('logout')}
                   </Button>
                 </li>
               </ul>
