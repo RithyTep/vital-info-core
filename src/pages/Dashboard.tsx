@@ -189,7 +189,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{t('dashboard')}</h1>
-          <p className="text-gray-600">{t("Welcome to your modern Hospital Management System")}</p>
+          {/* <p className="text-gray-600">{t("Welcome to your modern Hospital Management System")}</p> */}
         </div>
         {/* Show time in GMT+7 on Dashboard */}
         <CurrentTime />

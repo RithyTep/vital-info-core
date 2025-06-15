@@ -64,7 +64,7 @@ const LoginForm = () => {
         <CardHeader className="space-y-4 text-center">
           <div className="flex items-center justify-center space-x-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold animate-bounce">H</div>
-            <h1 className="text-2xl font-bold text-blue-600 animate-fade-in">{t('hms')}</h1>
+            <h1 className="text-2xl font-bold text-blue-600 animate-fade-in">{t('ms')}</h1>
           </div>
           <CardTitle className="text-xl">{t('loginRequired')}</CardTitle>
           <div className="flex items-center justify-center space-x-2">

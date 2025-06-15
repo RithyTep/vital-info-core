@@ -92,7 +92,7 @@ const Layout = ({ children }: LayoutProps) => {
                   </ul>
                 </li>
                 {/* MiniCalendar above Logout */}
-                <li className="pt-4">
+                <li >
                   <MiniCalendar />
                 </li>
                 <li className="mt-auto">
@@ -124,4 +124,3 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
-
