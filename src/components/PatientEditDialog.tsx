@@ -284,17 +284,6 @@ const PatientEditDialog: React.FC<PatientEditDialogProps> = ({
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2 text-gray-700">
-          {t('insuranceProvider') || 'Insurance Provider'}
-        </label>
-        <Input
-          name="insuranceProvider"
-          value={form.insuranceProvider || ''}
-          onChange={handleChange}
-          placeholder={t('insuranceProviderPlaceholder') || 'Insurance company and policy number'}
-        />
-      </div>
     </div>
   );
 

@@ -183,6 +183,7 @@ const translations = {
     noDocuments: 'No documents available',
     editPatientInformation: 'Edit Patient Information',
     searchPatients: 'Search patients',
+    saveChanges: 'Save Changes',
   },
   km: {
     // Navigation
@@ -334,6 +335,8 @@ const translations = {
     loginRequired: 'ត្រូវការចូលប្រើប្រាស់',
     invalidPassword: 'ពាក្យសម្ងាត់មិនត្រឹមត្រូវ',
     appShortName: 'មន្ទីសម្រាកព្យាលបាល​​ ចំរ៉ុងរិទ្ធ',
+    saveChanges: 'រក្សាទុកការផ្លាស់ប្តូរ',
+    insuranceProvider: 'អ្នកផ្គត់ផ្គង់ធានារ៉ាប់រង',
     hospitalManagementSubtitle: 'ប្រព័ន្ធគ្រប់គ្រងមន្ទីរពេទ្យ',
     language: 'ភាសា',
     logout: 'ចាកចេញ',

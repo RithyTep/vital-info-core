@@ -360,9 +360,9 @@ const Patients = () => {
                         <SelectValue placeholder={t('selectGender')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Male">{t('male')}</SelectItem>
-                        <SelectItem value="Female">{t('female')}</SelectItem>
-                        <SelectItem value="Other">{t('other')}</SelectItem>
+                        <SelectItem value="male">{t('male')}</SelectItem>
+                        <SelectItem value="female">{t('female')}</SelectItem>
+                        <SelectItem value="other">{t('other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
