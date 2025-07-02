@@ -7,9 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Plus, Edit, Trash, Table as TableIcon, Users, Printer } from "lucide-react";
+import { Plus, Edit, Trash, Table as TableIcon, Users, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Table,
@@ -20,8 +18,7 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table";
-import { localStorageService, Patient } from "@/services/localStorageService";
-import { format } from "date-fns";
+import { localStorageService } from "@/services/localStorageService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   AlertDialog,
@@ -36,14 +33,29 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { printData } from "@/utils/printUtils";
 
+export interface Patient {
+  id: string;
+  name: string;
+  email: string;
+  contact: string;
+  gender: string;
+  age: number;
+  description: string;
+  profilePicture: string;
+  medicalHistory?: string;
+  bloodGroup?: string;
+  assignedDoctor?: string;
+}
+
 type NewPatientForm = {
   name: string;
   email: string;
   phone: string;
   gender: string;
-  dob: Date | undefined;
-  address: string;
+  age: number | "";
+  description: string;
   profilePicture: string;
+  bloodGroup: string;
 };
 
 const defaultFormData: NewPatientForm = {
@@ -51,9 +63,10 @@ const defaultFormData: NewPatientForm = {
   email: "",
   phone: "",
   gender: "",
-  dob: undefined,
-  address: "",
+  age: "",
+  description: "",
   profilePicture: "",
+  bloodGroup: "",
 };
 
 const Patients = () => {
@@ -113,18 +126,17 @@ const Patients = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const patientInfo = {
         name: formData.name,
         email: formData.email,
         contact: formData.phone,
         gender: formData.gender,
-        dob: formData.dob ? formData.dob.toISOString().split("T")[0] : "",
-        address: formData.address,
-        age: formData.dob ? new Date().getFullYear() - formData.dob.getFullYear() : 0,
-        medicalHistory: editingPatient?.medicalHistory || "",
+        age: formData.age === "" ? 0 : Number(formData.age),
+        description: formData.description,
         profilePicture: formData.profilePicture,
+        medicalHistory: editingPatient?.medicalHistory || "",
+        bloodGroup: formData.bloodGroup,
       };
       if (editingPatient) {
         localStorageService.updatePatient(editingPatient.id, patientInfo);
@@ -141,7 +153,6 @@ const Patients = () => {
           description: t('patientAddedSuccess'),
         });
       }
-
       setDialogOpen(false);
       setEditingPatient(null);
       setFormData(defaultFormData);
@@ -162,9 +173,10 @@ const Patients = () => {
       email: patient.email || "",
       phone: patient.contact || "",
       gender: patient.gender || "",
-      dob: patient.dob ? new Date(patient.dob) : undefined,
-      address: patient.address || "",
+      age: typeof patient.age === 'number' ? patient.age : "",
+      description: patient.description || "",
       profilePicture: patient.profilePicture || "",
+      bloodGroup: patient.bloodGroup || "",
     });
     setDialogOpen(true);
   };
@@ -198,13 +210,13 @@ const Patients = () => {
       email: patient.email,
       contact: patient.contact,
       gender: patient.gender,
-      dob: patient.dob,
-      address: patient.address,
+      age: patient.age,
+      description: patient.description,
     }));
     printData(
       printableData,
       t('patients'),
-      ['name', 'email', 'contact', 'gender', 'dob', 'address']
+      ['name', 'email', 'contact', 'gender', 'age', 'description']
     );
   };
 
@@ -244,80 +256,107 @@ const Patients = () => {
           </Select>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button
-                onClick={openAddDialog}
-              >
+              <Button onClick={openAddDialog}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('addPatient')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-xl border-0">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-blue-700 mb-2">
                   {editingPatient ? t('updatePatient') : t('addNewPatient')}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <p className="text-gray-500 text-sm">{t('patientInfoPrompt')}</p>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <p className="text-gray-500 text-sm mb-2">{t('patientInfoPrompt')}</p>
+                {/* Profile Picture */}
                 <div className="space-y-2">
                   <Label htmlFor="profilePicture">Profile Picture</Label>
                   <div className="flex items-center gap-4">
-                    <Avatar>
+                    <Avatar className="w-16 h-16">
                       <AvatarImage src={formData.profilePicture} alt={formData.name} />
-                      <AvatarFallback>{formData.name ? formData.name.charAt(0).toUpperCase() : 'P'}</AvatarFallback>
+                      <AvatarFallback className="text-lg">{formData.name ? formData.name.charAt(0).toUpperCase() : 'P'}</AvatarFallback>
                     </Avatar>
                     <Input
                       id="profilePicture"
                       type="file"
                       accept="image/*"
                       onChange={handleProfilePictureChange}
-                      className="flex-1"
+                      className="flex-1 rounded-lg"
                     />
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <div className="space-y-2 flex-1">
-                    <Label htmlFor="name">{t('fullName')}</Label>
+                {/* Personal Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">{t('fullName')} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
+                      className="rounded-lg"
                     />
                   </div>
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-2">
                     <Label htmlFor="email">{t('email')}</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="rounded-lg"
                     />
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="age">Age</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      min="0"
+                      value={formData.age}
+                      onChange={(e) => setFormData({ ...formData, age: e.target.value === '' ? '' : Number(e.target.value) })}
+                      className="rounded-lg"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bloodGroup">Blood Group</Label>
+                    <Select
+                      value={formData.bloodGroup}
+                      onValueChange={value => setFormData({ ...formData, bloodGroup: value })}
+                    >
+                      <SelectTrigger id="bloodGroup" className="rounded-lg">
+                        <SelectValue placeholder="Select blood group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="phone">{t('phoneNumber')}</Label>
                     <Input
                       id="phone"
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="rounded-lg"
                     />
                   </div>
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-2">
                     <Label htmlFor="gender">{t('gender')}</Label>
                     <Select
                       value={formData.gender}
                       onValueChange={value => setFormData({ ...formData, gender: value })}
                     >
-                      <SelectTrigger id="gender">
+                      <SelectTrigger id="gender" className="rounded-lg">
                         <SelectValue placeholder={t('selectGender')} />
                       </SelectTrigger>
                       <SelectContent>
@@ -328,55 +367,25 @@ const Patients = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <div className="space-y-2 flex-1">
-                    <Label htmlFor="dob">{t('dateOfBirth')}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={`w-full justify-start text-left font-normal ${!formData.dob ? "text-muted-foreground" : ""}`}
-                        >
-                          {formData.dob ? format(formData.dob, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.dob}
-                          onSelect={date => setFormData({ ...formData, dob: date || undefined })}
-                          captionLayout="dropdown"
-                          fromYear={1920}
-                          toYear={new Date().getFullYear()}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    <Label htmlFor="address">{t('address')}</Label>
-                    <Textarea
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData({ ...formData, address: e.target.value })
-                      }
-                      rows={2}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">{t('description')}</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={2}
+                    className="rounded-lg"
+                  />
                 </div>
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => {
                     setDialogOpen(false);
                     setEditingPatient(null);
                     setFormData(defaultFormData);
-                  }}>
+                  }} className="rounded-lg">
                     {t('cancel')}
                   </Button>
-                  <Button type="submit">
+                  <Button type="submit" className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow">
                     {editingPatient ? t('updatePatient') : t('createPatient')}
                   </Button>
                 </div>
@@ -398,16 +407,14 @@ const Patients = () => {
             <p className="text-gray-500 mb-6 max-w-sm">
               {t('getStartedPatient')}
             </p>
-            <Button
-              onClick={openAddDialog}
-            >
+            <Button onClick={openAddDialog}>
               <Plus className="h-4 w-4 mr-2" />
               {t('addPatient')}
             </Button>
           </div>
         </Card>
       ) : (
-        <div className="bg-white/90 rounded-lg shadow border p-4">
+        <div className="bg-white/90 rounded-lg shadow border p-4 overflow-x-auto">
           <Table>
             <TableCaption>{t('allRegisteredPatients')}</TableCaption>
             <TableHeader>
@@ -417,8 +424,9 @@ const Patients = () => {
                 <TableHead>{t('email')}</TableHead>
                 <TableHead>{t('phoneNumber')}</TableHead>
                 <TableHead>{t('gender')}</TableHead>
-                <TableHead>{t('dateOfBirth')}</TableHead>
-                <TableHead>{t('address')}</TableHead>
+                <TableHead>{t('age')}</TableHead>
+                <TableHead>{t('assignedDoctor') || 'Doctor'}</TableHead>
+                <TableHead>{t('bloodGroup') || 'Blood Group'}</TableHead>
                 <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -431,12 +439,13 @@ const Patients = () => {
                       <AvatarFallback>{patient.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </TableCell>
-                  <TableCell>{patient.name}</TableCell>
+                  <TableCell className="font-medium">{patient.name}</TableCell>
                   <TableCell>{patient.email}</TableCell>
                   <TableCell>{patient.contact}</TableCell>
                   <TableCell>{patient.gender}</TableCell>
-                  <TableCell>{patient.dob}</TableCell>
-                  <TableCell>{patient.address}</TableCell>
+                  <TableCell>{patient.age}</TableCell>
+                  <TableCell>{patient.assignedDoctor || '-'}</TableCell>
+                  <TableCell>{patient.bloodGroup || '-'}</TableCell>
                   <TableCell className="flex justify-end gap-2">
                     <Button
                       variant="outline"
@@ -453,6 +462,13 @@ const Patients = () => {
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = `/patient/${patient.id}`}
+                    >
+                       {t('view')}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -460,7 +476,8 @@ const Patients = () => {
           </Table>
         </div>
       )}
-       <AlertDialog open={!!patientToDelete} onOpenChange={(open) => !open && setPatientToDelete(null)}>
+      
+      <AlertDialog open={!!patientToDelete} onOpenChange={(open) => !open && setPatientToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

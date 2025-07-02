@@ -9,11 +9,14 @@ import Layout from "./components/Layout";
 import LoginForm from "./components/LoginForm";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
+import PatientDetail from "./pages/PatientDetail";
+import PatientEdit from "./pages/PatientEdit";
 import Doctors from "./pages/Doctors";
 import Medications from "./pages/Medications";
 import Appointments from "./pages/Appointments";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,8 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/patients" element={<Patients />} />
+        <Route path="/patient/:id" element={<PatientDetail />} />
+        <Route path="/patients/:id/edit" element={<PatientEdit />} />
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/medications" element={<Medications />} />
         <Route path="/appointments" element={<Appointments />} />
@@ -47,7 +52,9 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
           </BrowserRouter>
         </LanguageProvider>
       </AuthProvider>

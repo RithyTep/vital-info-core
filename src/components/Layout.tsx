@@ -1,14 +1,16 @@
-
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Users, UserCheck, Pill, Calendar, LayoutDashboard, LogOut, Languages, Settings } from 'lucide-react';
+import { Users, UserCheck, Pill, Calendar, LayoutDashboard, LogOut, Languages, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import MiniCalendar from './MiniCalendar';
+import { SidebarPatientSearch } from '@/components/ui/sidebar';
+import { localStorageService } from '@/services/localStorageService';
+import { Input } from './ui/input';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -18,7 +20,43 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const [query, setQuery] = React.useState("")
+  const [results, setResults] = React.useState<any[]>([])
+  const [showDropdown, setShowDropdown] = React.useState(false)
+  const navigate = useNavigate()
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setQuery(value)
+    if (value.trim().length > 0) {
+      const patients = localStorageService.getPatients()
+      const filtered = patients.filter(
+        (p) =>
+          p.name.toLowerCase().includes(value.toLowerCase()) ||
+          p.id.toLowerCase().includes(value.toLowerCase())
+      )
+      setResults(filtered)
+      setShowDropdown(true)
+    } else {
+      setResults([])
+      setShowDropdown(false)
+    }
+  }
+
+  const handleSelect = (id: string) => {
+    const exists = localStorageService.getPatients().some(p => p.id === id)
+    if (exists) {
+      setQuery("")
+      setResults([])
+      setShowDropdown(false)
+      navigate(`/patient/${id}`)
+    } else {
+      setQuery("")
+      setResults([])
+      setShowDropdown(false)
+      alert("Patient not found.")
+    }
+  }
   const navigation = [
     { name: t('dashboard'), href: '/', icon: LayoutDashboard },
     { name: t('patients'), href: '/patients', icon: Users },
@@ -65,6 +103,40 @@ const Layout = ({ children }: LayoutProps) => {
 
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                <li>
+                  <div className="relative p-2">
+                    <Input
+                      placeholder={t('searchPatients')}
+                      value={query}
+                      onChange={handleSearch}
+                      className="mb-2"
+                      onFocus={() => query && setShowDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                      autoComplete="off"
+
+                    />
+                    {showDropdown && results.length > 0 && (
+                      <div className="absolute left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto mt-1 animate-fade-in">
+                        {results.map((p) => (
+                          <button
+                            key={p.id}
+                            className="flex items-center w-full px-3 py-2 hover:bg-blue-50 text-left gap-2 transition-colors"
+                            onMouseDown={() => handleSelect(p.id)}
+                          >
+                            <User className="w-4 h-4 text-blue-500" />
+                            <span className="font-medium truncate">{p.name}</span>
+                            <span className="ml-auto text-xs text-gray-400">{p.id}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {showDropdown && query && results.length === 0 && (
+                      <div className="absolute left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 p-3 text-gray-400 text-sm">
+                        No patients found.
+                      </div>
+                    )}
+                  </div>
+                </li>
                 <li>
                   <ul role="list" className="-mx-2 space-y-2">
                     {navigation.map((item) => (

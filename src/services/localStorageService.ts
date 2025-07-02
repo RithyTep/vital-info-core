@@ -1,4 +1,3 @@
-
 export interface Patient {
   id: string;
   name: string;
@@ -11,6 +10,13 @@ export interface Patient {
   dob?: string;
   address?: string;
   profilePicture?: string;
+  description?: string;
+  assignedDoctor?: string; // Added for type safety
+  bloodType?: string;
+  allergies?: string;
+  emergencyContact?: string;
+  insuranceProvider?: string;
+  bloodGroup?: string;
 }
 
 export interface Doctor {
@@ -21,6 +27,7 @@ export interface Doctor {
   email?: string;
   address?: string;
   createdAt: string;
+  profilePicture?: string; // Added for type safety
 }
 
 export interface Medication {
@@ -54,7 +61,16 @@ class LocalStorageService {
   // Generic CRUD operations
   private getItems<T>(key: string): T[] {
     const items = localStorage.getItem(key);
-    return items ? JSON.parse(items) : [];
+    if (!items) return [];
+    try {
+      const parsed = JSON.parse(items);
+      // Defensive: ensure parsed is an array
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      // If corrupted, clear the key and return []
+      localStorage.removeItem(key);
+      return [];
+    }
   }
 
   private setItems<T>(key: string, items: T[]): void {
@@ -154,7 +170,7 @@ class LocalStorageService {
     return appointments.map(app => ({
       ...app,
       patientName: patients.find(p => p.id === app.patientId)?.name,
-      doctorName: doctors.find(d => d.id === app.doctorId)?.name,
+      doctorName: doctors.find(d => d.id === app.doctorId)?.name ?? 'Unknown Doctor',
     }));
   }
 

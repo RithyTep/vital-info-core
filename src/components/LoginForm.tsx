@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import MiniCalendar from './MiniCalendar';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 const LoginForm = () => {
-  const [adminName, setAdminName] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -19,7 +17,6 @@ const LoginForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Optionally: Save adminName to storage if needed for later
     if (login(password)) {
       toast({
         title: 'Success',
@@ -82,20 +79,6 @@ const LoginForm = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* New Name Field */}
-            <div className="space-y-2">
-              <Label htmlFor="adminName">{t('adminName')}</Label>
-              <Input
-                id="adminName"
-                type="text"
-                value={adminName}
-                onChange={(e) => setAdminName(e.target.value)}
-                placeholder={t('adminName')}
-                className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                autoComplete="username"
-                required
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t('password')}</Label>
               <Input
@@ -107,6 +90,7 @@ const LoginForm = () => {
                 required
                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
                 autoComplete="current-password"
+                autoFocus
               />
             </div>
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-200">

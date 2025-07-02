@@ -14,7 +14,7 @@ const translations = {
     doctors: 'Doctors',
     medications: 'Medications',
     prescriptions: 'Prescriptions',
-    
+
     // Common
     add: 'Add',
     edit: 'Edit',
@@ -27,13 +27,13 @@ const translations = {
     print: 'Print',
     success: 'Success',
     error: 'Error',
-    
+
     // Dashboard
     totalPatients: 'Total Patients',
     totalDoctors: 'Total Doctors',
     quickActions: 'Quick Actions',
     recentActivity: 'Recent Activity',
-    
+
     // Patients
     addPatient: 'Add Patient',
     patientName: 'Patient Name',
@@ -67,7 +67,30 @@ const translations = {
     fetchPatientsFailed: 'Failed to fetch patients',
     loading: 'Loading...',
     actions: 'Actions',
-    
+    doctorImage: 'Doctor Image',
+    noDoctorAssigned: 'No doctor assigned',
+    patientNotFound: 'Patient Not Found',
+    patientNotFoundDescription: 'The patient you are looking for does not exist or has been removed.',
+    back: 'Back',
+    overview: 'Overview',
+    documents: 'Documents',
+    noDescription: 'No description available',
+    noAddress: 'No address provided',
+    emergencyContact: 'Emergency Contact',
+    noEmergencyContact: 'No emergency contact information',
+    upcomingAppointments: 'Upcoming Appointments',
+    noAppointments: 'No upcoming appointments',
+    noMedicalHistory: 'No medical history recorded',
+    assignedDoctor: 'Assigned Doctor',
+    bloodType: 'Blood Type',
+    selectBloodType: 'Select blood type',
+    contactAndInsurance: 'Contact & Insurance',
+    basicInfo: 'Basic Info',
+    medical: 'Medical',
+    descriptionPlaceholder: 'Brief description or notes about the patient',
+    enterFullName: "Enter patient's full name",
+    preferNotToSay: 'Prefer not to say',
+
     // Doctors
     addDoctor: 'Add Doctor',
     doctorName: 'Doctor Name',
@@ -79,7 +102,7 @@ const translations = {
     doctorFailedSave: 'Failed to save doctor',
     confirmDeleteDoctor: 'Are you sure you want to delete this doctor?',
     noDoctorsFound: 'No doctors found',
-    
+
     // Medications
     addMedication: 'Add Medication',
     medicationName: 'Medication Name',
@@ -127,7 +150,7 @@ const translations = {
     selectPatient: 'Select a patient',
     selectDoctor: 'Select a doctor',
     time: 'Time',
-    
+
     // Auth
     login: 'Login',
     password: 'Password',
@@ -150,7 +173,16 @@ const translations = {
     restoreComplete: "Restore complete",
     restoreFailed: "Restore failed",
     adminInfoSaved: "Admin information saved.",
-    authToken: "Auth Token"
+    authToken: "Auth Token",
+    description: "Description",
+    enterDescription: "Enter a brief description or notes",
+    enterName: "Enter name",
+    enterEmail: "Enter email address",
+    bloodGroup: "Blood Group",
+    view: "View",
+    noDocuments: 'No documents available',
+    editPatientInformation: 'Edit Patient Information',
+    searchPatients: 'Search patients',
   },
   km: {
     // Navigation
@@ -159,7 +191,7 @@ const translations = {
     doctors: 'វេជ្ជបណ្ឌិត',
     medications: 'ថ្នាំពេទ្យ',
     prescriptions: 'បទវេជ្ជបញ្ជា',
-    
+
     // Common
     add: 'បន្ថែម',
     edit: 'កែប្រែ',
@@ -172,13 +204,13 @@ const translations = {
     print: 'បោះពុម្ព',
     success: 'ជោគជ័យ',
     error: 'បរាជ័យ',
-    
+
     // Dashboard
     totalPatients: 'អ្នកជំងឺសរុប',
     totalDoctors: 'វេជ្ជបណ្ឌិតសរុប',
     quickActions: 'សកម្មភាពរហ័ស',
     recentActivity: 'សកម្មភាពថ្មីៗ',
-    
+
     // Patients
     addPatient: 'បន្ថែមអ្នកជំងឺ',
     patientName: 'ឈ្មោះអ្នកជំងឺ',
@@ -212,7 +244,30 @@ const translations = {
     fetchPatientsFailed: 'បរាជ័យក្នុងការទាញយកអ្នកជំងឺ',
     loading: 'កំពុងដំណើរការ...',
     actions: 'សកម្មភាព',
-    
+    doctorImage: 'រូបវេជ្ជបណ្ឌិត',
+    noDoctorAssigned: 'មិនទាន់មានវេជ្ជបណ្ឌិត',
+    patientNotFound: 'រកមិនឃើញអ្នកជំងឺ',
+    patientNotFoundDescription: 'អ្នកជំងឺដែលអ្នកកំពុងស្វែងរកមិនមានទេ ឬត្រូវបានលុបចេញ។',
+    back: 'ត្រឡប់ក្រោយ',
+    overview: 'ទិដ្ឋភាពសរុប',
+    documents: 'ឯកសារ',
+    noDescription: 'មិនមានការពិពណ៌នាទេ',
+    noAddress: 'មិនមានអាសយដ្ឋាន',
+    emergencyContact: 'ទំនាក់ទំនងបន្ទាន់',
+    noEmergencyContact: 'មិនមានព័ត៌មានទំនាក់ទំនងបន្ទាន់',
+    upcomingAppointments: 'ការណាត់ជួបខាងមុខ',
+    noAppointments: 'មិនមានការណាត់ជួបខាងមុខ',
+    noMedicalHistory: 'មិនមានប្រវត្តិវេជ្ជសាស្ត្រទេ',
+    assignedDoctor: 'វេជ្ជបណ្ឌិតដែលបានចាត់តាំង',
+    bloodType: 'ប្រភេទឈាម',
+    selectBloodType: 'ជ្រើសរើសប្រភេទឈាម',
+    contactAndInsurance: 'ទំនាក់ទំនង និង ធានារ៉ាប់រង',
+    basicInfo: 'ព័ត៌មានមូលដ្ឋាន',
+    medical: 'វេជ្ជសាស្ត្រ',
+    descriptionPlaceholder: 'ពិពណ៌នាឬកំណត់ចំណាំអំពីអ្នកជំងឺ',
+    enterFullName: "បញ្ចូលឈ្មោះពេញរបស់អ្នកជំងឺ",
+    preferNotToSay: 'មិនចង់បញ្ជាក់',
+
     // Doctors
     addDoctor: 'បន្ថែមវេជ្ជបណ្ឌិត',
     doctorName: 'ឈ្មោះវេជ្ជបណ្ឌិត',
@@ -224,7 +279,7 @@ const translations = {
     doctorFailedSave: 'បរាជ័យក្នុងការរក្សាទុកវេជ្ជបណ្ឌិត',
     confirmDeleteDoctor: 'តើអ្នកប្រាកដថាចង់លុបវេជ្ជបណ្ឌិតនេះមែនទេ?',
     noDoctorsFound: 'មិនមានវេជ្ជបណ្ឌិត',
-    
+
     // Medications
     addMedication: 'បន្ថែមថ្នាំពេទ្យ',
     medicationName: 'ឈ្មោះថ្នាំ',
@@ -272,7 +327,7 @@ const translations = {
     selectPatient: 'ជ្រើសរើសអ្នកជំងឺ',
     selectDoctor: 'ជ្រើសរើសវេជ្ជបណ្ឌិត',
     time: 'ពេលវេលា',
-    
+
     // Auth
     login: 'ចូលប្រើប្រាស់',
     password: 'ពាក្យសម្ងាត់',
@@ -295,7 +350,13 @@ const translations = {
     restoreComplete: "ស្ដារទិន្នន័យបានជោគជ័យ",
     restoreFailed: "ស្ដារទិន្នន័យបរាជ័យ",
     adminInfoSaved: "រក្សាទុកព័ត៌មានអ្នកគ្រប់គ្រង។",
-    authToken: "សញ្ញាផ្ទៀងផ្ទាត់កម្មសិទ្ធិ"
+    authToken: "សញ្ញាផ្ទៀងផ្ទាត់កម្មសិទ្ធិ",
+    description: "ការពិពណ៌នា",
+    bloodGroup: "ក្រុមឈាម",
+    view: "មើល",
+    noDocuments: 'មិនមានឯកសារទេ',
+    editPatientInformation: 'កែប្រែព័ត៌មានអ្នកជំងឺ',
+    searchPatients: 'ស្វែងរកអ្នកជំងឺ',
   }
 };
 

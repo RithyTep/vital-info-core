@@ -16,7 +16,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
+import { localStorageService } from "@/services/localStorageService"
+import { useNavigate } from "react-router-dom"
+import { User } from "lucide-react"
+import { useLanguage } from "@/contexts/LanguageContext"
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
@@ -612,7 +615,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}
@@ -733,6 +736,79 @@ const SidebarMenuSubButton = React.forwardRef<
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
 
+export function SidebarPatientSearch() {
+  const [query, setQuery] = React.useState("")
+  const [results, setResults] = React.useState<any[]>([])
+  const [showDropdown, setShowDropdown] = React.useState(false)
+  const navigate = useNavigate()
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setQuery(value)
+    if (value.trim().length > 0) {
+      const patients = localStorageService.getPatients()
+      const filtered = patients.filter(
+        (p) =>
+          p.name.toLowerCase().includes(value.toLowerCase()) ||
+          p.id.toLowerCase().includes(value.toLowerCase())
+      )
+      setResults(filtered)
+      setShowDropdown(true)
+    } else {
+      setResults([])
+      setShowDropdown(false)
+    }
+  }
+
+  const handleSelect = (id: string) => {
+    const exists = localStorageService.getPatients().some(p => p.id === id)
+    if (exists) {
+      setQuery("")
+      setResults([])
+      setShowDropdown(false)
+      navigate(`/patient/${id}`)
+    } else {
+      setQuery("")
+      setResults([])
+      setShowDropdown(false)
+      alert("Patient not found.")
+    }
+  }
+  return (
+    <div className="relative p-2">
+      <Input
+        placeholder={t('searchPatients')}
+        value={query}
+        onChange={handleSearch}
+        className="mb-2"
+        onFocus={() => query && setShowDropdown(true)}
+        onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+        autoComplete="off"
+
+      />
+      {showDropdown && results.length > 0 && (
+        <div className="absolute left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto mt-1 animate-fade-in">
+          {results.map((p) => (
+            <button
+              key={p.id}
+              className="flex items-center w-full px-3 py-2 hover:bg-blue-50 text-left gap-2 transition-colors"
+              onMouseDown={() => handleSelect(p.id)}
+            >
+              <User className="w-4 h-4 text-blue-500" />
+              <span className="font-medium truncate">{p.name}</span>
+              <span className="ml-auto text-xs text-gray-400">{p.id}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {showDropdown && query && results.length === 0 && (
+        <div className="absolute left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 p-3 text-gray-400 text-sm">
+          No patients found.
+        </div>
+      )}
+    </div>
+  )
+}
 export {
   Sidebar,
   SidebarContent,
