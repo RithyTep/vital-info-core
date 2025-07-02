@@ -30,7 +30,7 @@ export const printData = (data: any[], title: string, columns: string[]) => {
       </head>
       <body>
         <div class="header">
-          <h1>HMS - Hospital Management System</h1>
+          <h1>HMS - CHAMRONGRITH CLINIC</h1>
           <h2>${title}</h2>
         </div>
         <div class="date">Printed on: ${new Date().toLocaleString()}</div>

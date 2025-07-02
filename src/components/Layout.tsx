@@ -74,11 +74,15 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white/95 backdrop-blur-sm px-6 pb-4 shadow-xl border-r border-gray-200">
             <div className="flex h-16 shrink-0 items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                  H
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg overflow-hidden">
+                  <img
+                    src="https://zcp184l8mpgeuiph.public.blob.vercel-storage.com/2025-06-21%2015.41.35-2m5dg45lCYTP9CDPO5n4GTsGeDQaao.jpg"
+                    alt="Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-blue-600">{t('appShortName')}</h1>
+                  <h1 className="text-nowrap text-[16px] font-bold text-blue-600">{t('appShortName')}</h1>
                   <span className="text-xs text-gray-500">{t('hospitalManagementSubtitle')}</span>
                 </div>
               </div>

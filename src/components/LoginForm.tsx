@@ -59,11 +59,22 @@ const LoginForm = () => {
       </div>
       <Card className="w-full max-w-md shadow-2xl animate-fade-in">
         <CardHeader className="space-y-4 text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold animate-bounce">H</div>
-            <h1 className="text-2xl font-bold text-blue-600 animate-fade-in">{t('ms')}</h1>
+
+
+          <div className="flex items-center space-x-2 m-auto">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg overflow-hidden">
+              <img
+                src="https://zcp184l8mpgeuiph.public.blob.vercel-storage.com/2025-06-21%2015.41.35-2m5dg45lCYTP9CDPO5n4GTsGeDQaao.jpg"
+                alt="Logo"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h1 className="text-nowrap text-[16px] font-bold text-blue-600">{t('appShortName')}</h1>
+              <span className="text-xs text-gray-500">{t('hospitalManagementSubtitle')}</span>
+            </div>
           </div>
-          <CardTitle className="text-xl">{t('loginRequired')}</CardTitle>
+
           <div className="flex items-center justify-center space-x-2">
             <span className="text-sm text-gray-600">{t('language')}</span>
             <Select value={language} onValueChange={(value) => setLanguage(value as 'en' | 'km')}>
