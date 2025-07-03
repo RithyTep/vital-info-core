@@ -33,10 +33,14 @@ export interface Doctor {
 export interface Medication {
   id: string;
   name: string;
-  dosage: string;
   stockQuantity: number;
-  createdAt: string;
+  unitPrice: number;
+  lastRestocked: string;
+  expiryDate: string;
+  category: string;
   imageUrl?: string;
+  createdAt: string;
+  remainingStock?: number;
 }
 
 export interface Appointment {
