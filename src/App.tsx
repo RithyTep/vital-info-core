@@ -17,7 +17,8 @@ import Appointments from "./pages/Appointments";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
+import POS from "@/pages/POS"
+import History from "@/pages/History";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -38,6 +39,8 @@ const AppContent = () => {
         <Route path="/medications" element={<Medications />} />
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/pos" element={<POS />} />
+        <Route path="/history"  element={<History />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

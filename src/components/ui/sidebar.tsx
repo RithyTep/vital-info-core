@@ -794,7 +794,15 @@ export function SidebarPatientSearch() {
               className="flex items-center w-full px-3 py-2 hover:bg-blue-50 text-left gap-2 transition-colors"
               onMouseDown={() => handleSelect(p.id)}
             >
-              <User className="w-4 h-4 text-blue-500" />
+              {p.imageUrl || p.profilePicture ? (
+                <img
+                  src={p.imageUrl || p.profilePicture}
+                  alt={p.name}
+                  className="w-6 h-6 rounded-full object-cover border"
+                />
+              ) : (
+                <User className="w-4 h-4 text-blue-500" />
+              )}
               <span className="font-medium truncate">{p.name}</span>
               <span className="ml-auto text-xs text-gray-400">{p.id}</span>
             </button>

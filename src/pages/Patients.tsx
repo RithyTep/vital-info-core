@@ -386,7 +386,7 @@ const Patients = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
+                    <Label htmlFor="age">{t('age')}</Label>
                     <Input
                       id="age"
                       type="number"
@@ -399,7 +399,7 @@ const Patients = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="bloodGroup">Blood Group</Label>
+                    <Label htmlFor="bloodGroup">{t('bloodGroup')}</Label>
                     <Select
                       value={formData.bloodGroup}
                       onValueChange={(value) => setFormData({ ...formData, bloodGroup: value })}
@@ -507,7 +507,6 @@ const Patients = () => {
         <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableCaption className="text-gray-500">{t("allRegisteredPatients")}</TableCaption>
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
                   <TableHead className="font-semibold"></TableHead>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,6 @@ function getAdminProfile() {
     const { name, password } = JSON.parse(profile);
     return { name, password };
   }
-  // Default admin
   return { name: "Admin", password: "5569" };
 }
 
@@ -42,17 +40,13 @@ function getTokenExpiry() {
 }
 
 const Settings: React.FC = () => {
-  // Profile State
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwVisible, setPwVisible] = useState(false);
   const [cpwVisible, setCpwVisible] = useState(false);
-  // Token State
   const [expiry, setExpiry] = useState(getTokenExpiry());
-  // Backup State
   const [backupText, setBackupText] = useState("");
-  // Language
   const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
@@ -64,7 +58,6 @@ const Settings: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Profile Save
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -75,7 +68,6 @@ const Settings: React.FC = () => {
     toast({ title: t("profile"), description: t("adminInfoSaved") || "Admin information saved." });
   };
 
-  // Backup: Export all HMS keys
   const handleBackup = () => {
     const keys = [
       "hms-patients",
@@ -86,12 +78,27 @@ const Settings: React.FC = () => {
       AUTH_TOKEN_KEY,
     ];
     const backup: Record<string, string | null> = {};
-    keys.forEach((key) => (backup[key] = localStorage.getItem(key)));
+    keys.forEach((key) => {
+      let value = localStorage.getItem(key);
+      if (value && ["hms-patients", "hms-doctors", "hms-medications", "hms-appointments"].includes(key)) {
+        try {
+          const arr = JSON.parse(value);
+          if (Array.isArray(arr)) {
+            value = JSON.stringify(arr.map(item => {
+              const { image, imageUrl, profilePicture, ...rest } = item;
+              return rest;
+            }));
+          }
+        } catch {
+          console.error(`Failed to parse ${key}:`, value);
+        }
+      }
+      backup[key] = value;
+    });
     setBackupText(JSON.stringify(backup, null, 2));
     toast({ title: t("backupReady"), description: t("dataExported") || "Data exported to the textbox below." });
   };
 
-  // Restore backup from textarea
   const handleRestore = () => {
     try {
       const data = JSON.parse(backupText);
@@ -110,7 +117,6 @@ const Settings: React.FC = () => {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">{t("settings")}</h1>
       <Tabs defaultValue="profile" className="w-full">
-        {/* Tabs Header: Triggers and Language Select in a flex row */}
         <div className="flex justify-between items-center mb-2">
           <TabsList>
             <TabsTrigger value="profile">{t("profile")}</TabsTrigger>
@@ -130,7 +136,6 @@ const Settings: React.FC = () => {
             </Select>
           </div>
         </div>
-        {/* Profile Tab */}
         <TabsContent value="profile">
           <form className="space-y-4 mt-4" onSubmit={handleProfileSave}>
             <div>
@@ -142,7 +147,6 @@ const Settings: React.FC = () => {
                 className="max-w-xs"
               />
             </div>
-            {/* Password Field with Eye */}
             <div>
               <label className="block text-sm font-medium mb-1">{t("password")}</label>
               <div className="relative flex items-center max-w-xs">
@@ -166,7 +170,6 @@ const Settings: React.FC = () => {
                 </button>
               </div>
             </div>
-            {/* Confirm Password Field with Eye */}
             <div>
               <label className="block text-sm font-medium mb-1">{t("confirmPassword") || "Confirm Password"}</label>
               <div className="relative flex items-center max-w-xs">
@@ -193,7 +196,6 @@ const Settings: React.FC = () => {
             <Button type="submit" className="mt-2">{t("save")}</Button>
           </form>
         </TabsContent>
-        {/* Token Tab */}
         <TabsContent value="token">
           <div className="mt-4">
             <h2 className="text-base font-medium mb-2">{t("authToken")}</h2>
@@ -206,7 +208,6 @@ const Settings: React.FC = () => {
             <p className="mt-2 text-muted-foreground text-sm">{t("reloginToReset")}</p>
           </div>
         </TabsContent>
-        {/* Backup Tab */}
         <TabsContent value="backup">
           <div className="mt-4 flex flex-col gap-2">
             <Button type="button" onClick={handleBackup} size="sm">
@@ -229,4 +230,3 @@ const Settings: React.FC = () => {
 };
 
 export default Settings;
-

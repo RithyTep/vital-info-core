@@ -1,25 +1,37 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Users, UserCheck, Pill, Calendar, LayoutDashboard, LogOut, Languages, Settings, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import MiniCalendar from './MiniCalendar';
-import { SidebarPatientSearch } from '@/components/ui/sidebar';
-import { localStorageService } from '@/services/localStorageService';
-import { Input } from './ui/input';
+"use client"
+
+import React from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { cn } from "@/lib/utils"
+import {
+  Users,
+  UserCheck,
+  Pill,
+  Calendar,
+  LayoutDashboard,
+  LogOut,
+  Languages,
+  Settings,
+  User,
+  ShoppingCart,
+  History,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/AuthContext"
+import { useLanguage } from "@/contexts/LanguageContext"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import MiniCalendar from "./MiniCalendar"
+import { localStorageService } from "@/services/localStorageService"
+import { Input } from "./ui/input"
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const location = useLocation();
-  const { logout } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const location = useLocation()
+  const { logout } = useAuth()
+  const { language, setLanguage, t } = useLanguage()
   const [query, setQuery] = React.useState("")
   const [results, setResults] = React.useState<any[]>([])
   const [showDropdown, setShowDropdown] = React.useState(false)
@@ -31,9 +43,7 @@ const Layout = ({ children }: LayoutProps) => {
     if (value.trim().length > 0) {
       const patients = localStorageService.getPatients()
       const filtered = patients.filter(
-        (p) =>
-          p.name.toLowerCase().includes(value.toLowerCase()) ||
-          p.id.toLowerCase().includes(value.toLowerCase())
+        (p) => p.name.toLowerCase().includes(value.toLowerCase()) || p.id.toLowerCase().includes(value.toLowerCase()),
       )
       setResults(filtered)
       setShowDropdown(true)
@@ -44,7 +54,7 @@ const Layout = ({ children }: LayoutProps) => {
   }
 
   const handleSelect = (id: string) => {
-    const exists = localStorageService.getPatients().some(p => p.id === id)
+    const exists = localStorageService.getPatients().some((p) => p.id === id)
     if (exists) {
       setQuery("")
       setResults([])
@@ -57,14 +67,17 @@ const Layout = ({ children }: LayoutProps) => {
       alert("Patient not found.")
     }
   }
+
   const navigation = [
-    { name: t('dashboard'), href: '/', icon: LayoutDashboard },
-    { name: t('patients'), href: '/patients', icon: Users },
-    { name: t('doctors'), href: '/doctors', icon: UserCheck },
-    { name: t('medications'), href: '/medications', icon: Pill },
-    { name: t('appointments'), href: '/appointments', icon: Calendar },
-    { name: t('settings'), href: '/settings', icon: Settings }, // Use the correct Settings icon for settings
-  ];
+    { name: t("dashboard"), href: "/", icon: LayoutDashboard },
+    { name: t("patients"), href: "/patients", icon: Users },
+    { name: t("doctors"), href: "/doctors", icon: UserCheck },
+    { name: t("medications"), href: "/medications", icon: Pill },
+    { name: t("appointments"), href: "/appointments", icon: Calendar },
+    { name: "POS", href: "/pos", icon: ShoppingCart },
+    { name: "History", href: "/history", icon: History },
+    { name: t("settings"), href: "/settings", icon: Settings },
+  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -82,8 +95,8 @@ const Layout = ({ children }: LayoutProps) => {
                   />
                 </div>
                 <div>
-                  <h1 className="text-nowrap text-[16px] font-bold text-blue-600">{t('appShortName')}</h1>
-                  <span className="text-xs text-gray-500">{t('hospitalManagementSubtitle')}</span>
+                  <h1 className="text-nowrap text-[16px] font-bold text-blue-600">{t("appShortName")}</h1>
+                  <span className="text-xs text-gray-500">{t("hospitalManagementSubtitle")}</span>
                 </div>
               </div>
             </div>
@@ -92,11 +105,11 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Languages className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-600">{t('language')}</span>
+                <span className="text-sm text-gray-600">{t("language")}</span>
               </div>
-              <Select value={language} onValueChange={(value) => setLanguage(value as 'en' | 'km')}>
+              <Select value={language} onValueChange={(value) => setLanguage(value as "en" | "km")}>
                 <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder={t('language')} />
+                  <SelectValue placeholder={t("language")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
@@ -110,14 +123,13 @@ const Layout = ({ children }: LayoutProps) => {
                 <li>
                   <div className="relative p-2">
                     <Input
-                      placeholder={t('searchPatients')}
+                      placeholder={t("searchPatients")}
                       value={query}
                       onChange={handleSearch}
                       className="mb-2"
                       onFocus={() => query && setShowDropdown(true)}
                       onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                       autoComplete="off"
-
                     />
                     {showDropdown && results.length > 0 && (
                       <div className="absolute left-0 right-0 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto mt-1 animate-fade-in">
@@ -149,15 +161,17 @@ const Layout = ({ children }: LayoutProps) => {
                           to={item.href}
                           className={cn(
                             location.pathname === item.href
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                              : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50',
-                            'group flex gap-x-3 rounded-xl p-3 text-sm leading-6 font-semibold transition-all duration-200 transform hover:scale-105'
+                              ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
+                              : "text-gray-700 hover:text-blue-600 hover:bg-blue-50",
+                            "group flex gap-x-3 rounded-xl p-3 text-sm leading-6 font-semibold transition-all duration-200 transform hover:scale-105",
                           )}
                         >
                           <item.icon
                             className={cn(
-                              location.pathname === item.href ? 'text-white' : 'text-gray-400 group-hover:text-blue-600',
-                              'h-6 w-6 shrink-0'
+                              location.pathname === item.href
+                                ? "text-white"
+                                : "text-gray-400 group-hover:text-blue-600",
+                              "h-6 w-6 shrink-0",
                             )}
                             aria-hidden="true"
                           />
@@ -168,17 +182,17 @@ const Layout = ({ children }: LayoutProps) => {
                   </ul>
                 </li>
                 {/* MiniCalendar above Logout */}
-                <li >
+                <li>
                   <MiniCalendar />
                 </li>
                 <li className="mt-auto">
                   <Button
                     onClick={logout}
                     variant="outline"
-                    className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                    className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 bg-transparent"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    {t('logout')}
+                    {t("logout")}
                   </Button>
                 </li>
               </ul>
@@ -196,7 +210,7 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout

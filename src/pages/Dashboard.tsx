@@ -309,7 +309,7 @@ const Dashboard = () => {
           <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-xl">
             <CardHeader className="flex flex-row items-center gap-2">
               <LineChartIcon className="h-6 w-6 text-blue-600" />
-              <CardTitle>Monthly Trends</CardTitle>
+              <CardTitle>{t('monthlyTrends')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
