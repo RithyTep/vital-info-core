@@ -202,7 +202,7 @@ const Layout = ({ children }: LayoutProps) => {
 
         {/* Main content */}
         <div className="pl-72 w-full">
-          <main className="py-6">
+          <main className="pt-6">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 mx-6 mb-6">
               {children}
             </div>

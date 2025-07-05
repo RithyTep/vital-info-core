@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
 import { localStorageService, type Medication } from "@/services/localStorageService"
 import { useLanguage } from "@/contexts/LanguageContext"
@@ -47,8 +48,8 @@ const POS: React.FC = () => {
   const [customerName, setCustomerName] = useState("")
   const [showReceipt, setShowReceipt] = useState(false)
   const [lastSale, setLastSale] = useState<Sale | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState("all")
 
-  // Get exchange rate from localStorage or use default
   const getExchangeRate = () => {
     const settings = localStorage.getItem("hms-settings")
     if (settings) {
@@ -60,11 +61,19 @@ const POS: React.FC = () => {
 
   const exchangeRate = getExchangeRate()
 
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(medications.map((med) => med.category).filter(Boolean))]
+    return ["all", ...uniqueCategories]
+  }, [medications])
+
   const filteredMedications = useMemo(() => {
-    return medications.filter(
-      (medication) => medication.name.toLowerCase().includes(searchTerm.toLowerCase()) && medication.stockQuantity > 0,
-    )
-  }, [medications, searchTerm])
+    return medications.filter((medication) => {
+      const matchesSearch = medication.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === "all" || medication.category === selectedCategory
+      const hasStock = medication.stockQuantity > 0
+      return matchesSearch && matchesCategory && hasStock
+    })
+  }, [medications, searchTerm, selectedCategory])
 
   const addToCart = (medication: Medication) => {
     const existingItem = cart.find((item) => item.id === medication.id)
@@ -142,13 +151,11 @@ const POS: React.FC = () => {
     }
 
     try {
-      // Update stock quantities
       cart.forEach((cartItem) => {
         const newStock = cartItem.stockQuantity - cartItem.quantity
         localStorageService.updateMedication(cartItem.id, { stockQuantity: newStock })
       })
 
-      // Create sale record without image data to prevent quota issues
       const saleItems: SaleItem[] = cart.map((item) => ({
         id: item.id,
         name: item.name,
@@ -169,16 +176,12 @@ const POS: React.FC = () => {
         exchangeRate,
       }
 
-      // Save sale to localStorage
       const existingSales = localStorage.getItem("hms-sales")
       const sales = existingSales ? JSON.parse(existingSales) : []
       sales.push(sale)
 
-      // Check if we're approaching localStorage limit
       const newSalesData = JSON.stringify(sales)
       if (newSalesData.length > 4000000) {
-        // 4MB limit to be safe
-        // Keep only the last 100 sales to prevent quota issues
         const recentSales = sales.slice(-100)
         localStorage.setItem("hms-sales", JSON.stringify(recentSales))
         toast({
@@ -211,23 +214,23 @@ const POS: React.FC = () => {
     if (!lastSale) return
 
     const receiptContent = `
-      <div style="font-family: monospace; max-width: 300px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-          <h2 style="margin: 0;">VITAL INFO CORE</h2>
-          <p style="margin: 5px 0;">Hospital Management System</p>
-          <p style="margin: 5px 0;">Receipt #${lastSale.id}</p>
-          <p style="margin: 5px 0;">${new Date(lastSale.date).toLocaleString()}</p>
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 280px; margin: auto; padding: 15px; font-size: 12px;">
+        <div style="text-align: center; margin-bottom: 15px;">
+          <h2 style="margin: 0; font-size: 1.2em;">VITAL INFO CORE</h2>
+          <p style="margin: 2px 0;">Hospital Management System</p>
+          <p style="margin: 2px 0;">Receipt #${lastSale.id}</p>
+          <p style="margin: 2px 0;">${new Date(lastSale.date).toLocaleString()}</p>
         </div>
         
-        <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 10px;">
           <strong>Customer: ${lastSale.customerName}</strong>
         </div>
         
-        <div style="border-top: 1px dashed #000; padding-top: 10px;">
+        <div style="border-top: 1px dashed #333; padding-top: 8px;">
           ${lastSale.items
-            .map(
-              (item) => `
-            <div style="margin-bottom: 8px;">
+        .map(
+          (item) => `
+            <div style="margin-bottom: 6px;">
               <div>${item.name}</div>
               <div style="display: flex; justify-content: space-between;">
                 <span>${item.quantity} x $${item.unitPrice.toFixed(2)}</span>
@@ -235,25 +238,25 @@ const POS: React.FC = () => {
               </div>
             </div>
           `,
-            )
-            .join("")}
+        )
+        .join("")}
         </div>
         
-        <div style="border-top: 1px dashed #000; padding-top: 10px; margin-top: 15px;">
-          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
+        <div style="border-top: 1px dashed #333; padding-top: 8px; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em;">
             <span>Total (USD):</span>
             <span>$${lastSale.totalUSD.toFixed(2)}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em;">
             <span>Total (KHR):</span>
             <span>${lastSale.totalKHR.toLocaleString()} ៛</span>
           </div>
-          <div style="margin-top: 10px; font-size: 12px; text-align: center;">
+          <div style="margin-top: 8px; font-size: 0.9em; text-align: center;">
             Exchange Rate: 1 USD = ${lastSale.exchangeRate} KHR
           </div>
         </div>
         
-        <div style="text-align: center; margin-top: 20px; font-size: 12px;">
+        <div style="text-align: center; margin-top: 15px; font-size: 0.9em;">
           <p>Thank you for your purchase!</p>
           <p>Get well soon!</p>
         </div>
@@ -274,53 +277,173 @@ const POS: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <div className="p-2 bg-gray-200 rounded-xl text-gray-700">
-              <ShoppingCart className="h-6 w-6" />
-            </div>
-            Point of Sale System
-          </h1>
-          <p className="text-gray-600">Quick medicine sales and inventory management</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="bg-slate-50 min-h-screen w-full overflow-hidden">
+      <div className="max-w-full mx-auto p-2 sm:p-3 md:p-4 h-screen flex flex-col">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 xl:gap-4 flex-1 h-full min-h-0">
           {/* Products Section */}
-          <div className="lg:col-span-2">
-            <Card className="shadow-sm border border-gray-200 bg-white">
-              <CardHeader className="bg-gray-100 text-gray-900 rounded-t-lg">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Available Medicines
-                </CardTitle>
+          <div className="xl:col-span-3 h-full flex flex-col">
+            <Card className="h-full flex flex-col shadow-md border-slate-200 bg-white">
+              <CardHeader className="p-3 xl:p-4 flex-shrink-0 border-b">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                   <Input
                     placeholder="Search medicines..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white border-gray-200"
+                    className="pl-8 h-9 text-sm border-slate-300 focus:border-blue-500 focus:ring-blue-500 rounded-md bg-white"
                   />
                 </div>
               </CardHeader>
-              <CardContent className="p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
-                  {filteredMedications.map((medication) => (
-                    <Card
-                      key={medication.id}
-                      className="cursor-pointer hover:shadow-md transition-all duration-200 border border-gray-200 bg-white"
-                      onClick={() => addToCart(medication)}
+              <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
+                <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="h-full flex flex-col">
+                  <TabsList className="flex flex-wrap gap-2 p-2 h-auto flex-shrink-0 bg-slate-100/80 border-b">
+                    {categories.map((category) => (
+                      <TabsTrigger
+                        key={category}
+                        value={category}
+                        className="text-xs font-medium px-3 py-1 rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-colors shadow-sm whitespace-nowrap"
+                      >
+                        {category === "all" ? t("all") || "All" : category}
+                        <Badge variant="secondary" className="ml-1.5 bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded-full">
+                          {category === "all"
+                            ? medications.filter((m) => m.stockQuantity > 0).length
+                            : medications.filter((m) => m.category === category && m.stockQuantity > 0).length}
+                        </Badge>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  <div
+                    className="flex-1 min-h-0 overflow-auto p-3 xl:p-4"
+                    style={{ maxHeight: "calc(100vh - 244px)" }}
+                  >
+                    {categories.map((category) => (
+                      <TabsContent key={category} value={category} className="m-0">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
+                          {filteredMedications.map((medication) => (
+                            <div
+                              key={medication.id}
+                              className="group cursor-pointer bg-white border border-slate-200 rounded-lg p-2.5 hover:border-blue-500 hover:shadow-md transition-all duration-150 flex flex-col"
+                              onClick={() => addToCart(medication)}
+                            >
+                              <div className="w-full h-16 mb-2 rounded-md overflow-hidden bg-slate-50 flex items-center justify-center border">
+                                {medication.imageUrl ? (
+                                  <img
+                                    src={medication.imageUrl || "/placeholder.svg"}
+                                    alt={medication.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = "none"
+                                      const parent = target.parentElement
+                                      if (parent) {
+                                        const fallback = parent.querySelector(".fallback-icon") as HTMLElement
+                                        if (fallback) fallback.style.display = "flex"
+                                      }
+                                    }}
+                                  />
+                                ) : null}
+                                <div
+                                  className={`fallback-icon text-slate-300 ${medication.imageUrl ? "hidden" : "flex"} items-center justify-center w-full h-full`}
+                                >
+                                  <Pill className="h-6 w-6" />
+                                </div>
+                              </div>
+                              <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+                                <h4 className="font-semibold text-slate-800 text-xs leading-snug break-words">
+                                  {medication.name}
+                                </h4>
+                                <div className="flex items-center justify-between text-xs">
+                                  <div className="text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                                    {medication.category}
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] bg-green-50 text-green-700 border-green-200 shrink-0 px-1.5 py-0.5 rounded-full"
+                                  >
+                                    {medication.stockQuantity}
+                                  </Badge>
+                                </div>
+                                <div className="pt-1">
+                                  <div className="text-base font-bold text-blue-600">
+                                    ${medication.unitPrice.toFixed(2)}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {filteredMedications.length === 0 && (
+                          <div className="text-center py-10 h-full flex flex-col items-center justify-center">
+                            <Package className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                            <p className="text-base font-medium text-slate-500">{t("noMedicationsFound") || "No medicines found"}</p>
+                            <p className="text-xs text-slate-400">{t("adjustSearchOrCategory") || "Adjust your search or category filters"}</p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    ))}
+                  </div>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* =============================================================================== */}
+          {/* === CART SECTION FIX APPLIED HERE ============================================ */}
+          {/* The CardContent is now the single scrollable container for the entire cart   */}
+          {/* =============================================================================== */}
+          <div className="h-full flex flex-col">
+            <Card className="h-full flex flex-col shadow-md border-slate-200 bg-white">
+              <CardHeader className="p-3 xl:p-4 flex-shrink-0 border-b">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-blue-500" />
+                    Cart <span className="text-blue-600">({cart.length})</span>
+                  </CardTitle>
+                  {cart.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearCart}
+                      className="text-slate-500 hover:text-red-600 hover:bg-red-50 h-7 w-7 rounded-full"
+                      title={t("clearCart") || "Clear Cart"}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex flex-col items-center text-center">
-                          {/* Medicine Image */}
-                          <div className="w-16 h-16 mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                            {medication.imageUrl ? (
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-1.5 mt-3">
+                  <Label htmlFor="customerName" className="text-xs font-medium text-slate-600">
+                    {t("pos.customerName") || "Customer Name"}
+                  </Label>
+                  <Input
+                    id="customerName"
+                    placeholder={t("pos.customerName") || "Guest"}
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="h-9 text-sm border-slate-300 focus:border-blue-500 focus:ring-blue-500 rounded-md bg-white"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-auto p-3 xl:p-4">
+                {cart.length === 0 ? (
+                  <div className="text-center py-10 h-full flex flex-col items-center justify-center">
+                    <ShoppingCart className="h-10 w-10 mx-auto mb-2 text-slate-300" />
+                    <p className="font-medium text-sm text-slate-500">{t("pos.cartIsEmpty") || "Your cart is empty"}</p>
+                    <p className="text-xs text-slate-400">{t("addMedicinesToStart") || "Add medicines to start"}</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2.5 max-h-[500px] overflow-y-auto">
+                      {cart.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-2.5 p-2 bg-slate-50 rounded-lg border"
+                        >
+                          <div className="w-10 h-10 rounded-md overflow-hidden bg-white border flex items-center justify-center flex-shrink-0">
+                            {item.imageUrl ? (
                               <img
-                                src={medication.imageUrl || "/placeholder.svg"}
-                                alt={medication.name}
+                                src={item.imageUrl || "/placeholder.svg"}
+                                alt={item.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement
@@ -328,179 +451,68 @@ const POS: React.FC = () => {
                                   const parent = target.parentElement
                                   if (parent) {
                                     const fallback = parent.querySelector(".fallback-icon") as HTMLElement
-                                    if (fallback) fallback.style.display = "block"
+                                    if (fallback) fallback.style.display = "flex"
                                   }
                                 }}
                               />
                             ) : null}
-                            <div className={`fallback-icon text-gray-400 ${medication.imageUrl ? "hidden" : ""}`}> 
-                              <Pill className="h-8 w-8" />
+                            <div
+                              className={`fallback-icon text-slate-300 ${item.imageUrl ? "hidden" : "flex"} items-center justify-center w-full h-full`}
+                            >
+                              <Pill className="h-5 w-5" />
                             </div>
                           </div>
-
-                          <div className="w-full">
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-semibold text-sm text-gray-800 truncate flex-1">{medication.name}</h4>
-                              <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-800 text-xs">
-                                {medication.stockQuantity}
-                              </Badge>
-                            </div>
-
-                            <p className="text-xs text-gray-600 mb-3 bg-gray-100 px-2 py-1 rounded-full">
-                              {medication.category}
-                            </p>
-
-                            <div className="space-y-1">
-                              <div className="flex justify-between items-center">
-                                <span className="font-bold text-blue-600 text-lg">
-                                  ${medication.unitPrice.toFixed(2)}
-                                </span>
-                              </div>
-                              <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                                {(medication.unitPrice * exchangeRate).toLocaleString()} ៛
-                              </div>
-                            </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-semibold text-xs text-slate-800 truncate">{item.name}</h5>
+                            <p className="text-[11px] text-slate-500">${item.unitPrice.toFixed(2)}</p>
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="h-6 w-6 rounded-full"
+                              title="Decrease"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="w-6 text-center text-sm font-bold text-slate-800">{item.quantity}</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="h-6 w-6 rounded-full"
+                              title="Increase"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="text-right w-16">
+                            <p className="font-bold text-xs text-blue-700">${item.subtotal.toFixed(2)}</p>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                      ))}
+                    </div>
 
-                {filteredMedications.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">No medicines found</p>
-                    <p className="text-sm">Try adjusting your search terms</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Cart Section */}
-          <div>
-            <Card className="shadow-sm border border-gray-200 bg-white">
-              <CardHeader className="bg-gray-100 text-gray-900 rounded-t-lg">
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5" />
-                    Shopping Cart ({cart.length})
-                  </span>
-                  {cart.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={clearCart} className="text-gray-700 hover:bg-gray-200">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </CardTitle>
-                <div>
-                  <Label htmlFor="customerName" className="text-gray-700">
-                    Customer Name
-                  </Label>
-                  <Input
-                    id="customerName"
-                    placeholder="Enter customer name..."
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="bg-white border-gray-200 mt-1"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-3 max-h-64 overflow-y-auto mb-4">
-                  {cart.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border"
-                    >
-                      {/* Item Image */}
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl || "/placeholder.svg"}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = "none"
-                              const parent = target.parentElement
-                              if (parent) {
-                                const fallback = parent.querySelector(".fallback-icon") as HTMLElement
-                                if (fallback) fallback.style.display = "block"
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <div className={`fallback-icon text-gray-400 ${item.imageUrl ? "hidden" : ""}`}> 
-                          <Pill className="h-5 w-5" />
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="space-y-2 p-3 bg-blue-50/70 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-sm text-slate-700">{t("pos.totalUSD") || "Total (USD)"}</span>
+                          <span className="text-lg font-bold text-blue-700">${totalUSD.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-sm text-slate-700">{t("pos.totalKHR") || "Total (KHR)"}</span>
+                          <span className="text-base font-bold text-blue-700">{totalKHR.toLocaleString()} ៛</span>
                         </div>
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-sm truncate">{item.name}</h5>
-                        <p className="text-xs text-gray-600">${item.unitPrice.toFixed(2)} per unit</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="font-bold text-sm text-blue-600">${item.subtotal.toFixed(2)}</p>
-                        <p className="text-xs text-gray-600">{(item.subtotal * exchangeRate).toLocaleString()} ៛</p>
-                      </div>
+                      <Button
+                        onClick={processSale}
+                        className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white h-10 text-sm font-bold rounded-lg shadow-sm"
+                      >
+                        <Calculator className="h-4 w-4 mr-2" />
+                        {t("pos.completeSale") || "Complete Sale"}
+                      </Button>
                     </div>
-                  ))}
-                </div>
-
-                {cart.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-medium">Your cart is empty</p>
-                    <p className="text-sm">Add medicines to get started</p>
-                  </div>
-                )}
-
-                {cart.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-center font-bold text-lg">
-                        <span>Total (USD)</span>
-                        <span className="text-blue-600">${totalUSD.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center font-bold text-lg">
-                        <span>Total (KHR)</span>
-                        <span className="text-green-600">{totalKHR.toLocaleString()} ៛</span>
-                      </div>
-                      <p className="text-xs text-gray-500 text-center bg-white py-1 px-2 rounded">
-                        Exchange Rate: 1 USD = {exchangeRate.toLocaleString()} KHR
-                      </p>
-                    </div>
-                    <Button
-                      onClick={processSale}
-                      className="w-full mt-4 bg-blue-600 hover:bg-blue-700"
-                      size="lg"
-                    >
-                      <Calculator className="h-4 w-4 mr-2" />
-                      Complete Sale
-                    </Button>
                   </>
                 )}
               </CardContent>
@@ -508,54 +520,54 @@ const POS: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Receipt Dialog */}
+      
       <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-green-600">🎉 Sale Completed!</DialogTitle>
+        <DialogContent className="max-w-[320px] p-0 rounded-lg shadow-lg border-0 bg-white">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle className="text-center text-green-600 flex items-center justify-center gap-2 text-base font-bold">
+              <div className="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-lg">✓</div>
+              {t("pos.saleCompleted") || "Sale Completed Successfully"}
+            </DialogTitle>
           </DialogHeader>
           {lastSale && (
-            <div className="space-y-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-bold text-lg">Receipt #{lastSale.id}</h3>
-                <p className="text-sm text-gray-600">{new Date(lastSale.date).toLocaleString()}</p>
-                <p className="text-sm font-medium">Customer: {lastSale.customerName}</p>
+            <div className="space-y-3 p-4">
+              <div className="text-center text-xs text-slate-600">
+                <p>{t("pos.receipt") || "Receipt"} ID: <span className="font-semibold text-slate-800">#{lastSale.id}</span></p>
+                <p>{t("pos.customerName") || "Customer"}: <span className="font-semibold text-slate-800">{lastSale.customerName}</span></p>
               </div>
-
               <Separator />
-
-              <div className="space-y-2 max-h-40 overflow-y-auto">
+              <div className="space-y-1 max-h-28 overflow-y-auto px-1">
                 {lastSale.items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm p-2 bg-gray-50 rounded">
-                    <span className="font-medium">
-                      {item.name} x{item.quantity}
+                  <div key={item.id} className="flex justify-between items-center text-xs p-1.5 bg-slate-50 rounded-md">
+                    <span className="font-medium text-slate-800 truncate pr-2">
+                      {item.name} <span className="text-slate-500">×{item.quantity}</span>
                     </span>
-                    <span className="font-bold">${item.subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-blue-700">${item.subtotal.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
-
               <Separator />
-
-              <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total (USD)</span>
-                  <span className="text-blue-600">${lastSale.totalUSD.toFixed(2)}</span>
+              <div className="space-y-1.5 p-3 bg-blue-50/80 rounded-lg">
+                <div className="flex justify-between font-bold text-sm">
+                  <span className="text-slate-700">{t("pos.totalUSD") || "Total (USD)"}</span>
+                  <span className="text-blue-700">${lastSale.totalUSD.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total (KHR)</span>
-                  <span className="text-green-600">{lastSale.totalKHR.toLocaleString()} ៛</span>
+                <div className="flex justify-between font-semibold text-sm">
+                  <span className="text-slate-700">{t("pos.totalKHR") || "Total (KHR)"}</span>
+                  <span className="text-blue-700">{lastSale.totalKHR.toLocaleString()} ៛</span>
                 </div>
               </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button onClick={printReceipt} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  <Printer className="h-4 w-4 mr-2" />
-                  Print Receipt
+              <div className="flex gap-2 pt-2">
+                <Button onClick={printReceipt} className="flex-1 bg-blue-600 hover:bg-blue-700 h-9 text-xs text-white font-bold rounded-md shadow-sm">
+                  <Printer className="h-3.5 w-3.5 mr-1.5" />
+                  {t("pos.printReceipt") || "Print Receipt"}
                 </Button>
-                <Button variant="outline" onClick={() => setShowReceipt(false)}>
-                  Close
+                <Button
+                  variant="outline"
+                  onClick={() => setShowReceipt(false)}
+                  className="h-9 text-xs px-3 rounded-md"
+                >
+                  {t("pos.close") || "Close"}
                 </Button>
               </div>
             </div>

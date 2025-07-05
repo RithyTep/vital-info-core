@@ -26,6 +26,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { printData } from "@/utils/printUtils"
 import { Badge } from "@/components/ui/badge"
 import { exportToExcel, type ExcelColumn } from "@/utils/excelUtils"
+import { AppPagination } from "../components/ui/AppPagination"
 
 const Doctors = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([])
@@ -42,12 +43,19 @@ const Doctors = () => {
     address: "",
     profilePicture: "",
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const { toast } = useToast()
   const { language, setLanguage, t } = useLanguage()
 
   useEffect(() => {
     fetchDoctors()
   }, [])
+
+  // Reset to first page on search
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, itemsPerPage])
 
   const handlePrint = () => {
     const printableData = filteredDoctors.map((doc) => ({
@@ -180,6 +188,8 @@ const Doctors = () => {
       doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doctor.contact.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  const paginatedDoctors = filteredDoctors.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   if (loading) {
     return (
@@ -371,68 +381,95 @@ const Doctors = () => {
           </div>
         </Card>
       ) : (
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50/80 border-b">
-                    <th className="px-6 py-4 text-left font-semibold"></th>
-                    <th className="px-6 py-4 text-left font-semibold">{t("name")}</th>
-                    <th className="px-6 py-4 text-left font-semibold">{t("specialty")}</th>
-                    <th className="px-6 py-4 text-left font-semibold">{t("contact")}</th>
-                    <th className="px-6 py-4 text-left font-semibold">Email</th>
-                    <th className="px-6 py-4 text-left font-semibold">Address</th>
-                    <th className="px-6 py-4 text-center font-semibold">{t("actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDoctors.map((doctor) => (
-                    <tr key={doctor.id} className="border-b hover:bg-green-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={(doctor as any).profilePicture || "/placeholder.svg"} alt={doctor.name} />
-                          <AvatarFallback className="bg-green-100 text-green-700">
-                            {doctor.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </td>
-                      <td className="px-6 py-4 font-medium">{doctor.name}</td>
-                      <td className="px-6 py-4">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {doctor.specialty}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">{doctor.contact}</td>
-                      <td className="px-6 py-4">{doctor.email || "-"}</td>
-                      <td className="px-6 py-4">{doctor.address || "-"}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2 justify-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(doctor)}
-                            className="hover:bg-blue-50 hover:border-blue-200"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(doctor)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
+        <>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50/80 border-b">
+                      <th className="px-6 py-4 text-left font-semibold"></th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("name")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("specialty")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("contact")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">Email</th>
+                      <th className="px-6 py-4 text-left font-semibold">Address</th>
+                      <th className="px-6 py-4 text-center font-semibold">{t("actions")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paginatedDoctors.map((doctor) => (
+                      <tr key={doctor.id} className="border-b hover:bg-green-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={(doctor as any).profilePicture || "/placeholder.svg"} alt={doctor.name} />
+                            <AvatarFallback className="bg-green-100 text-green-700">
+                              {doctor.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{doctor.name}</td>
+                        <td className="px-6 py-4">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {doctor.specialty}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4">{doctor.contact}</td>
+                        <td className="px-6 py-4">{doctor.email || "-"}</td>
+                        <td className="px-6 py-4">{doctor.address || "-"}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(doctor)}
+                              className="hover:bg-blue-50 hover:border-blue-200"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(doctor)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Items per page:</span>
+              <select
+                className="border rounded px-2 py-1 text-sm"
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              >
+                {[10, 25, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <AppPagination
+              currentPage={currentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredDoctors.length}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </>
       )}
 
       <AlertDialog open={!!doctorToDelete} onOpenChange={(open) => !open && setDoctorToDelete(null)}>

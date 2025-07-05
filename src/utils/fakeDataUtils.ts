@@ -306,6 +306,44 @@ export function generateFakeData() {
     }
   })
 
+  // Generate fake sales history (POS transactions)
+  const sales = Array.from({ length: 120 }, (_, i) => {
+    // Random date in the last 2 years
+    const saleDate = randomDate(new Date(2023, 0, 1), new Date())
+    // Random customer name or Guest
+    const customer = Math.random() < 0.7 ? `${randomFrom(names)} ${randomFrom(surnames)}` : "Guest"
+    // Random exchange rate (simulate small fluctuations)
+    const exchangeRate = 4000 + randomInt(-100, 100)
+    // Random number of items per sale
+    const numItems = randomInt(1, 5)
+    // Pick random medications for this sale
+    const saleMeds = Array.from({ length: numItems }, () => randomFrom(medications))
+    // Build sale items
+    const items = saleMeds.map(med => {
+      const quantity = randomInt(1, 4)
+      return {
+        id: med.id,
+        name: med.name,
+        unitPrice: med.unitPrice,
+        quantity,
+        subtotal: med.unitPrice * quantity,
+        category: med.category,
+      }
+    })
+    const totalUSD = items.reduce((sum, item) => sum + item.subtotal, 0)
+    const totalKHR = totalUSD * exchangeRate
+    return {
+      id: (Date.now() - i * 100000).toString(),
+      items,
+      total: totalUSD,
+      totalUSD,
+      totalKHR,
+      customerName: customer,
+      date: saleDate,
+      exchangeRate,
+    }
+  })
+
   // Update patients with assigned doctors based on recent appointments
   patients.forEach(patient => {
     const recentAppointments = appointments
@@ -317,7 +355,7 @@ export function generateFakeData() {
     }
   })
 
-  return { patients, doctors, medications, appointments }
+  return { patients, doctors, medications, appointments, sales }
 }
 
 // Enhanced storage function with validation
@@ -328,12 +366,13 @@ export function storeFakeDataToLocalStorage(data: ReturnType<typeof generateFake
     localStorage.removeItem("hms-doctors")
     localStorage.removeItem("hms-medications")
     localStorage.removeItem("hms-appointments")
-    
+    localStorage.removeItem("hms-sales")
     // Store new data
     localStorage.setItem("hms-patients", JSON.stringify(data.patients))
     localStorage.setItem("hms-doctors", JSON.stringify(data.doctors))
     localStorage.setItem("hms-medications", JSON.stringify(data.medications))
     localStorage.setItem("hms-appointments", JSON.stringify(data.appointments))
+    localStorage.setItem("hms-sales", JSON.stringify(data.sales))
     
     console.log("✅ Fake data successfully stored to localStorage")
     console.log(`📊 Generated: ${data.patients.length} patients, ${data.doctors.length} doctors, ${data.medications.length} medications, ${data.appointments.length} appointments`)

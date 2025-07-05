@@ -24,7 +24,7 @@ import { localStorageService, type Medication } from "@/services/localStorageSer
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useToast } from "@/hooks/use-toast"
 import { exportToExcel, type ExcelColumn } from "@/utils/excelUtils"
-
+import { AppPagination } from "../components/ui/AppPagination"
 const Medications = () => {
   const { t } = useLanguage()
   const { toast } = useToast()
@@ -46,10 +46,18 @@ const Medications = () => {
     imageUrl: "",
     categoryInput: "",
   })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const pageSize = 12
 
   useEffect(() => {
     fetchMedications()
   }, [])
+
+  // Reset to first page on search/filter
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, filterCategory, filterStatus, itemsPerPage])
 
   const fetchMedications = () => {
     try {
@@ -220,6 +228,8 @@ const Medications = () => {
     return matchesSearch && matchesCategory && matchesStatus
   })
 
+  const paginatedMedications = filteredMedications.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   const handleExportExcel = () => {
     try {
       const columns: ExcelColumn[] = [
@@ -257,12 +267,18 @@ const Medications = () => {
     }
   }
 
+  // Calculate summary stats
+  const totalValue = medications.reduce((sum, med) => sum + (med.unitPrice || 0) * (med.stockQuantity || 0), 0)
+  const totalItems = medications.length
+  const lowStockCount = medications.filter((med) => med.stockQuantity > 0 && med.stockQuantity < 10).length
+  const outOfStockCount = medications.filter((med) => med.stockQuantity === 0).length
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex items-center space-x-3">
           <Package className="animate-spin w-6 h-6 text-blue-500" />
-          <span className="text-gray-600">Loading medications...</span>
+          <span className="text-gray-600">{t('loadingMedications')}</span>
         </div>
       </div>
     )
@@ -270,9 +286,9 @@ const Medications = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className=" mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{t('medications.title')}</h1>
             <p className="text-gray-600 mt-1">{t('medications.subtitle')}</p>
@@ -280,6 +296,45 @@ const Medications = () => {
           <Badge variant="outline" className="px-3 py-1 text-sm">
             {filteredMedications.length} {t('medications.items')}
           </Badge>
+        </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-green-100 border-0 shadow-md rounded-xl">
+            <CardContent className="flex flex-col items-center p-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-200 mb-2">
+                <svg className="w-6 h-6 text-green-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 0V4m0 16v-4m8-4h-4m-8 0H4" /></svg>
+              </div>
+              <span className="text-xs text-gray-500">{t('medications.totalValue')}</span>
+              <span className="text-lg font-bold text-green-700 mt-1">${totalValue.toLocaleString()}</span>
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-md rounded-xl">
+            <CardContent className="flex flex-col items-center p-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-200 mb-2">
+                <Package className="w-6 h-6 text-blue-700" />
+              </div>
+              <span className="text-xs text-gray-500">{t('medications.totalItems')}</span>
+              <span className="text-lg font-bold text-blue-700 mt-1">{totalItems}</span>
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100 border-0 shadow-md rounded-xl">
+            <CardContent className="flex flex-col items-center p-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-200 mb-2">
+                <AlertTriangle className="w-6 h-6 text-amber-700" />
+              </div>
+              <span className="text-xs text-gray-500">{t('medications.lowStock')}</span>
+              <span className="text-lg font-bold text-amber-700 mt-1">{lowStockCount}</span>
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 border-0 shadow-md rounded-xl">
+            <CardContent className="flex flex-col items-center p-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-200 mb-2">
+                <XCircle className="w-6 h-6 text-red-700" />
+              </div>
+              <span className="text-xs text-gray-500">{t('medications.outOfStock')}</span>
+              <span className="text-lg font-bold text-red-700 mt-1">{outOfStockCount}</span>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Search and Actions */}
@@ -470,90 +525,100 @@ const Medications = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredMedications.map((medication) => {
-              const stockStatus = getStockStatus(medication)
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paginatedMedications.map((medication) => {
+                const stockStatus = getStockStatus(medication)
 
-              return (
-                <Card
-                  key={medication.id}
-                  className="group hover:shadow-md transition-all duration-200 bg-white border border-gray-200"
-                >
-                  <CardContent className="p-4">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate text-sm">{medication.name}</h3>
-                        {medication.dosage && <p className="text-xs text-gray-500 mt-1">{medication.dosage}</p>}
+                return (
+                  <Card
+                    key={medication.id}
+                    className="group hover:shadow-md transition-all duration-200 bg-white border border-gray-200"
+                  >
+                    <CardContent className="p-4">
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate text-sm">{medication.name}</h3>
+                          {medication.dosage && <p className="text-xs text-gray-500 mt-1">{medication.dosage}</p>}
+                        </div>
+                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(medication)}
+                            className="h-7 w-7 p-0 hover:bg-blue-50"
+                          >
+                            <Edit className="h-3 w-3 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(medication)}
+                            className="h-7 w-7 p-0 hover:bg-red-50"
+                          >
+                            <Trash className="h-3 w-3 text-red-600" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(medication)}
-                          className="h-7 w-7 p-0 hover:bg-blue-50"
-                        >
-                          <Edit className="h-3 w-3 text-blue-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(medication)}
-                          className="h-7 w-7 p-0 hover:bg-red-50"
-                        >
-                          <Trash className="h-3 w-3 text-red-600" />
-                        </Button>
-                      </div>
-                    </div>
 
-                    {/* Image */}
-                    {medication.imageUrl && (
-                      <div className="mb-3">
-                        <img
-                          src={medication.imageUrl || "/placeholder.svg"}
-                          alt={medication.name}
-                          className="w-full h-24 object-cover rounded-md border"
-                        />
-                      </div>
-                    )}
-
-                    {/* Stock Status */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${stockStatus.dotColor}`}></div>
-                        <span className="text-xs font-medium text-gray-700">{stockStatus.text}</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">{medication.stockQuantity}</span>
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-2 text-xs text-gray-600">
-                      {medication.category && (
-                        <div className="flex justify-between">
-                          <span>{t('medications.category')}:</span>
-                          <span className="font-medium text-gray-900">{medication.category}</span>
+                      {/* Image */}
+                      {medication.imageUrl && (
+                        <div className="mb-3">
+                          <img
+                            src={medication.imageUrl || "/placeholder.svg"}
+                            alt={medication.name}
+                            className="w-full h-24 object-cover rounded-md border"
+                          />
                         </div>
                       )}
-                      {medication.unitPrice && (
-                        <div className="flex justify-between">
-                          <span>{t('medications.unitPrice')}:</span>
-                          <span className="font-medium text-green-600">${medication.unitPrice}</span>
+
+                      {/* Stock Status */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${stockStatus.dotColor}`}></div>
+                          <span className="text-xs font-medium text-gray-700">{stockStatus.text}</span>
                         </div>
-                      )}
-                      {medication.expiryDate && (
-                        <div className="flex justify-between">
-                          <span>{t('medications.expires')}:</span>
-                          <span className="font-medium text-gray-900">
-                            {new Date(medication.expiryDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                        <span className="text-sm font-semibold text-gray-900">{medication.stockQuantity}</span>
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-2 text-xs text-gray-600">
+                        {medication.category && (
+                          <div className="flex justify-between">
+                            <span>{t('medications.category')}:</span>
+                            <span className="font-medium text-gray-900">{medication.category}</span>
+                          </div>
+                        )}
+                        {medication.unitPrice && (
+                          <div className="flex justify-between">
+                            <span>{t('medications.unitPrice')}:</span>
+                            <span className="font-medium text-green-600">${medication.unitPrice}</span>
+                          </div>
+                        )}
+                        {medication.expiryDate && (
+                          <div className="flex justify-between">
+                            <span>{t('medications.expires')}:</span>
+                            <span className="font-medium text-gray-900">
+                              {new Date(medication.expiryDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+            <div className="mt-4 flex justify-center">
+              <AppPagination
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredMedications.length}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </>
         )}
 
         <AlertDialog

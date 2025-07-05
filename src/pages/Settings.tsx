@@ -11,7 +11,6 @@ import { useLanguage } from "@/contexts/LanguageContext"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { generateFakeData, storeFakeDataToLocalStorage } from "@/utils/fakeDataUtils"
-import { hashPassword } from "@/utils/hashUtils"
 
 const ADMIN_KEY = "hms-admin-profile"
 const BACKUP_KEY = "hms-backup"
@@ -46,6 +45,7 @@ function getTokenExpiry() {
 }
 
 const Settings: React.FC = () => {
+  const location = typeof window !== 'undefined' ? window.location : { pathname: '' }
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -162,6 +162,7 @@ const Settings: React.FC = () => {
     storeFakeDataToLocalStorage(data);
     toast({ title: t("fakeDataGenerated") || "Fake data generated!", description: t("fakeDataDesc") || "100 records for each entity have been added." })
   }
+  const showFakeDataButton = location.hostname.includes('demo') || location.hostname === ('localhost')
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -191,11 +192,13 @@ const Settings: React.FC = () => {
             {t("localStorageUsage") || "LocalStorage Usage"}: {size.mb.toFixed(2)} MB
           </span>
         </div>
-        <div className="mb-4 flex justify-end">
-          <Button type="button" variant="outline" onClick={generateAndStoreFakeData}>
-            {t("generateFakeData") || "Generate Fake Data"}
-          </Button>
-        </div>
+        {showFakeDataButton && (
+          <div className="mb-4 flex justify-end">
+            <Button type="button" variant="outline" onClick={generateAndStoreFakeData}>
+              {t("generateFakeData") || "Generate Fake Data"}
+            </Button>
+          </div>
+        )}
         <TabsContent value="profile">
           <form className="space-y-4 mt-4" onSubmit={handleProfileSave}>
             <div>

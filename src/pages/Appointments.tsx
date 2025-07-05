@@ -30,6 +30,7 @@ import {
 import { printData } from "@/utils/printUtils"
 import { Badge } from "@/components/ui/badge"
 import { exportToExcel, type ExcelColumn } from "@/utils/excelUtils"
+import { AppPagination } from "../components/ui/AppPagination"
 
 type NewAppointmentForm = {
   patientId: string
@@ -59,6 +60,8 @@ const Appointments = () => {
   const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null)
   const [formData, setFormData] = useState<NewAppointmentForm>(defaultFormData)
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const { toast } = useToast()
   const { language, setLanguage, t } = useLanguage()
 
@@ -218,6 +221,13 @@ const Appointments = () => {
       appointment.doctorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  // Reset to first page on search/filter
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, itemsPerPage])
+
+  const paginatedAppointments = filteredAppointments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   if (loading) {
     return (
@@ -443,60 +453,87 @@ const Appointments = () => {
           </div>
         </Card>
       ) : (
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              {/* <TableCaption className="text-gray-500">{t("allScheduledAppointments")}</TableCaption> */}
-              <TableHeader>
-                <TableRow className="bg-gray-50/80">
-                  <TableHead className="font-semibold">{t("patientName")}</TableHead>
-                  <TableHead className="font-semibold">{t("doctorName")}</TableHead>
-                  <TableHead className="font-semibold">{t("date")}</TableHead>
-                  <TableHead className="font-semibold">{t("time")}</TableHead>
-                  <TableHead className="font-semibold">{t("reasonForVisit")}</TableHead>
-                  <TableHead className="font-semibold">{t("status")}</TableHead>
-                  <TableHead className="text-right font-semibold">{t("actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAppointments.map((appointment) => (
-                  <TableRow key={appointment.id} className="hover:bg-pink-50/50 transition-colors">
-                    <TableCell className="font-medium">{appointment.patientName || "N/A"}</TableCell>
-                    <TableCell>{appointment.doctorName || "N/A"}</TableCell>
-                    <TableCell>{appointment.date}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                        {appointment.time}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">{appointment.reason}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
-                    </TableCell>
-                    <TableCell className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(appointment)}
-                        className="hover:bg-blue-50 hover:border-blue-200"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(appointment)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+        <>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                {/* <TableCaption className="text-gray-500">{t("allScheduledAppointments")}</TableCaption> */}
+                <TableHeader>
+                  <TableRow className="bg-gray-50/80">
+                    <TableHead className="font-semibold">{t("patientName")}</TableHead>
+                    <TableHead className="font-semibold">{t("doctorName")}</TableHead>
+                    <TableHead className="font-semibold">{t("date")}</TableHead>
+                    <TableHead className="font-semibold">{t("time")}</TableHead>
+                    <TableHead className="font-semibold">{t("reasonForVisit")}</TableHead>
+                    <TableHead className="font-semibold">{t("status")}</TableHead>
+                    <TableHead className="text-right font-semibold">{t("actions")}</TableHead>
                   </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedAppointments.map((appointment) => (
+                    <TableRow key={appointment.id} className="hover:bg-pink-50/50 transition-colors">
+                      <TableCell className="font-medium">{appointment.patientName || "N/A"}</TableCell>
+                      <TableCell>{appointment.doctorName || "N/A"}</TableCell>
+                      <TableCell>{appointment.date}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {appointment.time}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">{appointment.reason}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
+                      </TableCell>
+                      <TableCell className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(appointment)}
+                          className="hover:bg-blue-50 hover:border-blue-200"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(appointment)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Items per page:</span>
+              <select
+                className="border rounded px-2 py-1 text-sm"
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              >
+                {[10, 25, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
                 ))}
-              </TableBody>
-            </Table>
+              </select>
+            </div>
           </div>
-        </Card>
+          <div className="flex justify-center mt-6">
+            <AppPagination
+              currentPage={currentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredAppointments.length}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </>
       )}
 
       <AlertDialog open={!!appointmentToDelete} onOpenChange={(open) => !open && setAppointmentToDelete(null)}>

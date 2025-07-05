@@ -29,6 +29,15 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { printData } from "@/utils/printUtils"
 import { Badge } from "@/components/ui/badge"
 import { exportToExcel, type ExcelColumn } from "@/utils/excelUtils"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination"
+import { AppPagination } from "../components/ui/AppPagination"
 
 export interface Patient {
   id: string
@@ -74,6 +83,9 @@ const Patients = () => {
   const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null)
   const [formData, setFormData] = useState<NewPatientForm>(defaultFormData)
   const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const pageSize = 10
   const { toast } = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
   const { t, language, setLanguage } = useLanguage()
@@ -254,12 +266,20 @@ const Patients = () => {
     }
   }
 
+  // Pagination logic
   const filteredPatients = patients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.contact.toLowerCase().includes(searchTerm.toLowerCase()),
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.contact.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage)
+  const paginatedPatients = filteredPatients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  // Reset to first page when searchTerm or itemsPerPage changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, itemsPerPage])
 
   if (loading) {
     return (
@@ -521,7 +541,7 @@ const Patients = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPatients.map((patient) => (
+                {paginatedPatients.map((patient) => (
                   <TableRow key={patient.id} className="hover:bg-blue-50/50 transition-colors">
                     <TableCell>
                       <Avatar className="w-10 h-10">
@@ -583,6 +603,31 @@ const Patients = () => {
           </div>
         </Card>
       )}
+
+      {/* Items per page and Pagination UI */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+        <div />
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Items per page:</span>
+          <select
+            className="border rounded px-2 py-1 text-sm"
+            value={itemsPerPage}
+            onChange={e => setItemsPerPage(Number(e.target.value))}
+          >
+            {[10, 25, 50, 100].map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="mt-4 flex justify-center">
+        <AppPagination
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={filteredPatients.length}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
       <AlertDialog open={!!patientToDelete} onOpenChange={(open) => !open && setPatientToDelete(null)}>
         <AlertDialogContent className="bg-white/95 backdrop-blur-sm">

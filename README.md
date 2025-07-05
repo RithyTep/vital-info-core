@@ -1,73 +1,54 @@
-# Welcome to your Lovable project
+# HMS System UI (sample)
 
-## Project info
+Project demo: https://lnkd.in/g9EwCxKp
 
-**URL**: https://lovable.dev/projects/6a45cfd6-d7ef-4a1f-a879-c45a6d03c313
+Password: `5569`
 
-## How can I edit this code?
+Git repository: https://lnkd.in/gQ-89bAs
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/6a45cfd6-d7ef-4a1f-a879-c45a6d03c313) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
+Tech Stack
 - Vite
-- TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Faker (sample data)
 
-## How can I deploy this project?
+Quick start (local development)
 
-Simply open [Lovable](https://lovable.dev/projects/6a45cfd6-d7ef-4a1f-a879-c45a6d03c313) and click on Share -> Publish.
+1. Clone the repository:
 
-## Can I connect a custom domain to my Lovable project?
+```sh
+git clone https://github.com/RithyTep/vital-info-core
+cd vital-info-core
+```
 
-Yes, you can!
+2. Install dependencies and run dev server:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```sh
+npm install
+npm run dev
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Build for production:
+
+```sh
+npm run build
+```
+
+Docker (optional) — build the production image shown in this repo:
+
+```sh
+docker build -t gcr.io/<YOUR_PROJECT_ID>/vital-info-core:latest .
+```
+
+Deployment
+- This project can be deployed to Vercel, Netlify, or a container platform (GKE).
+- If using Netlify, include a `_redirects` file with `/* /index.html 200` to support client-side routing.
+- If using a container (GKE), push the built image to a registry (GCR or Docker Hub) and update the Kubernetes manifests in `k8s/`.
+
+Editing and contribution
+- Edit files locally and push changes to the repository. Open a PR for review.
+
+License & notes
+- This is a sample UI project using fake data for demonstration.
+- Use the demo link and password above to explore the interface.

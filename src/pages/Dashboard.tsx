@@ -116,18 +116,6 @@ const Dashboard = () => {
         })
       }
 
-      // If no real data, generate sample data for demonstration
-      if (months.every((m) => m.patients === 0 && m.appointments === 0)) {
-        return [
-          { month: "Aug", patients: 12, appointments: 45 },
-          { month: "Sep", patients: 18, appointments: 52 },
-          { month: "Oct", patients: 15, appointments: 38 },
-          { month: "Nov", patients: 22, appointments: 61 },
-          { month: "Dec", patients: 28, appointments: 74 },
-          { month: "Jan", patients: 25, appointments: 68 },
-        ]
-      }
-
       return months
     }
 

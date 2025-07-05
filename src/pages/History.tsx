@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,6 +23,7 @@ import {
   Package,
   Pill,
 } from "lucide-react"
+import { AppPagination } from "../components/ui/AppPagination"
 
 interface SaleItem {
   id: string
@@ -50,6 +51,8 @@ const History: React.FC = () => {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [tableView, setTableView] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   // Get sales from localStorage
   const sales = useMemo(() => {
@@ -101,6 +104,17 @@ const History: React.FC = () => {
     })
   }, [sales, searchTerm])
 
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
+
+  // Paginated sales
+  const paginatedSales = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return filteredSales.slice(start, start + itemsPerPage)
+  }, [filteredSales, currentPage])
+
   const viewSaleDetails = (sale: Sale) => {
     setSelectedSale(sale)
     setShowDetails(true)
@@ -112,12 +126,12 @@ const History: React.FC = () => {
         <div style="text-align: center; margin-bottom: 20px;">
           <h2 style="margin: 0;">VITAL INFO CORE</h2>
           <p style="margin: 5px 0;">Hospital Management System</p>
-          <p style="margin: 5px 0;">Receipt #${sale.id}</p>
+          <p style="margin: 5px 0;">${t('pos.receipt') || 'Receipt'} #${sale.id}</p>
           <p style="margin: 5px 0;">${new Date(sale.date).toLocaleString()}</p>
         </div>
         
         <div style="margin-bottom: 15px;">
-          <strong>Customer: ${sale.customerName || "Guest"}</strong>
+          <strong>${t('pos.customerName') || 'Customer'}: ${sale.customerName || t('pos.guest') || 'Guest'}</strong>
         </div>
         
         <div style="border-top: 1px dashed #000; padding-top: 10px;">
@@ -138,21 +152,21 @@ const History: React.FC = () => {
         
         <div style="border-top: 1px dashed #000; padding-top: 10px; margin-top: 15px;">
           <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
-            <span>Total (USD):</span>
+            <span>${t('pos.totalUSD') || 'Total (USD)'}:</span>
             <span>$${sale.totalUSD.toFixed(2)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
-            <span>Total (KHR):</span>
+            <span>${t('pos.totalKHR') || 'Total (KHR)'}:</span>
             <span>${sale.totalKHR.toLocaleString()} ៛</span>
           </div>
           <div style="margin-top: 10px; font-size: 12px; text-align: center;">
-            Exchange Rate: 1 USD = ${sale.exchangeRate} KHR
+            ${t('pos.exchangeRate')?.replace('{{rate}}', sale.exchangeRate) || `Exchange Rate: 1 USD = ${sale.exchangeRate} KHR`}
           </div>
         </div>
         
         <div style="text-align: center; margin-top: 20px; font-size: 12px;">
-          <p>Thank you for your purchase!</p>
-          <p>Get well soon!</p>
+          <p>${t('pos.thankYou') || 'Thank you for your purchase!'}</p>
+          <p>${t('pos.getWellSoon') || 'Get well soon!'}</p>
         </div>
       </div>
     `
@@ -177,7 +191,7 @@ const History: React.FC = () => {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto">
+      <div className=" mx-auto">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
@@ -287,7 +301,7 @@ const History: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {filteredSales.map((sale) => (
+                    {paginatedSales.map((sale) => (
                       <tr key={sale.id} className="hover:bg-gray-50">
                         <td className="px-4 py-2 font-mono text-sm">#{sale.id}</td>
                         <td className="px-4 py-2 text-sm">{new Date(sale.date).toLocaleString()}</td>
@@ -309,10 +323,18 @@ const History: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+                <div className="mt-4 flex justify-center">
+                  <AppPagination
+                    currentPage={currentPage}
+                    totalItems={filteredSales.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredSales.map((sale) => (
+                {paginatedSales.map((sale) => (
                   <Card
                     key={sale.id}
                     className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
@@ -395,6 +417,14 @@ const History: React.FC = () => {
                     </CardContent>
                   </Card>
                 ))}
+                <div className="col-span-full mt-4 flex justify-center">
+                  <AppPagination
+                    currentPage={currentPage}
+                    totalItems={filteredSales.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
               </div>
             )}
           </CardContent>
